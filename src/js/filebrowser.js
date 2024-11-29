@@ -2,225 +2,6 @@ if (typeof exports === 'undefined') {
     exports = {}
 }
 
-class FileInFileBrowser {
-    static extensionToIcon = {
-        'txt': 'fa-file-alt',
-        'pdf': 'fa-file-pdf',
-        'doc': 'fa-file-word',
-        'docx': 'fa-file-word',
-        'xls': 'fa-file-excel',
-        'xlsx': 'fa-file-excel',
-        'ppt': 'fa-file-powerpoint',
-        'pptx': 'fa-file-powerpoint',
-        'jpg': 'fa-file-image',
-        'jpeg': 'fa-file-image',
-        'png': 'fa-file-image',
-        'gif': 'fa-file-image',
-        'mp3': 'fa-file-audio',
-        'wav': 'fa-file-audio',
-        'mov': 'fa-file-video',
-        'mp4': 'fa-file-video',
-        'avi': 'fa-file-video',
-        'zip': 'fa-file-archive',
-        'rar': 'fa-file-archive',
-        'tar': 'fa-file-archive',
-        'gz': 'fa-file-archive',
-        '7z': 'fa-file-archive',
-        'exe': 'fa-file-executable',
-        'js': 'fa-file-code',
-        'css': 'fa-file-code',
-        'html': 'fa-file-code',
-        'php': 'fa-file-code',
-        'py': 'fa-file-code',
-        'java': 'fa-file-code',
-        'c': 'fa-file-code',
-        'cpp': 'fa-file-code',
-        'h': 'fa-file-code',
-        'hpp': 'fa-file-code',
-        'json': 'fa-file-code',
-        'xml': 'fa-file-code',
-        'csv': 'fa-file-excel',
-        'file': 'fa-file',
-    };
-    constructor(filename, size, modified, contextMenu = null) {
-        this.filename = filename;
-        this.size = size;
-        this.modified = modified;
-        this.type = filename.split('.').pop().toLowerCase();
-        if (!this.type in FileInFileBrowser.extensionToIcon) {
-            this.type = 'file';
-        }
-        this.icon = FileInFileBrowser.extensionToIcon[this.type] || 'fa-file';
-        this._htmlElement = null;
-        this._tableRow = null;
-        this.selected = false;
-        this._clickHandler = null;
-        this._dblclickHandler = null;
-        this._contextMenu = contextMenu;
-    }
-    select() {
-        this.selected = true;
-        if (this._htmlElement) {
-            this._htmlElement.querySelector('.jsfb-file').classList.add('selected');
-        }
-    }
-    unselect() {
-        this.selected = false;
-        if (this._htmlElement) {
-            this._htmlElement.querySelector('.jsfb-file').classList.remove('selected');
-        }
-    }
-    toggleSelect() {
-        if (this.selected) {
-            this.unselect();
-        } else {
-            this.select();
-        }
-    }
-    createContextMenu() {
-        if (this._contextMenu === null) {
-            return null;
-        }
-        let contextMenu = document.createElement('div');
-        contextMenu.classList.add('jsfb-dropdown', 'jsfb-dropdown-s', 'jsfb-file-context-menu');
-        contextMenu.innerHTML = `
-            <button class="jsfb-dropdown-toggle" type="button">
-                <i class="fas fa-ellipsis-v"></i>
-            </button>`;
-        let dropdownContent = document.createElement('ul');
-        dropdownContent.classList.add('jsfb-dropdown-content');
-        if (this._contextMenu instanceof Array) {
-            this._contextMenu = this._contextMenu.reduce((acc, item) => {
-                acc[item] = {};
-                return acc;
-            }, {});
-        }
-        for (let option in this._contextMenu) {
-            // Create the structure for the context menu
-            let item = document.createElement('li');
-
-            // Prepare the button and get the options for each item
-            let button = document.createElement('button');
-            button.type = 'button';
-            button.dataset.action = option;
-            let text = this._contextMenu[option].label ?? option;
-            if (this._contextMenu[option].icon) {
-                button.innerHTML = `<i class="fas ${this._contextMenu[option].icon}"></i> ${text}`;
-            } else {
-                button.innerText = text;
-            }
-            let handler = this._contextMenu[option].handler ?? this._contextMenu[option];
-            if (handler instanceof Function) {
-                button.addEventListener('click', (file) => {
-                    handler(this);
-                });
-            }
-            item.appendChild(button);
-            dropdownContent.appendChild(item);
-        }
-        contextMenu.appendChild(dropdownContent);
-        return contextMenu;
-    }
-    tableRow() {
-        if (this._tableRow !== null) {
-            return this._tableRow;
-        }
-        let row = document.createElement('tr');
-        row.innerHTML = `
-            <td class="jsfb-file-name"><span class="jsfb-file-icon"><i class="fas ${this.icon}"></i></span> ${this.filename}</td>
-            <td class="jsfb-file-size">${toHumanSize(this.size)}</td>
-            <td class="jsfb-file-modified">${this.modified}</td>
-        `;
-
-        row.dataset.filename = btoa_utf8(this.filename);
-        row.dataset.size = this.size;
-        row.dataset.modified = this.modified;
-        row.dataset.type = this.type;
-
-        if (this.selected) {
-            row.classList.add('selected');
-        }
-        row.addEventListener('click', () => {
-            if (this._clickHandler instanceof Function) {
-                this._clickHandler(this);
-            }
-        });
-        row.addEventListener('dblclick', () => {
-            if (this._dblclickHandler instanceof Function) {
-                this._dblclickHandler(this);
-            }
-        });
-        this._tableRow = row;
-        return this._tableRow;
-    }
-    htmlElement(overlayGenerator = null) {
-        if (this._htmlElement !== null) {
-            return this._htmlElement;
-        }
-
-        let overlay = null;
-        if (overlayGenerator instanceof Function) {
-            overlay = overlayGenerator(this);
-        }
-
-        let contextMenu = this.createContextMenu();            
-
-        let element = document.createElement('div');
-        element.classList.add('jsfb-file-wrapper');
-        element.innerHTML = `
-            <div class="jsfb-file">
-                <div class="jsfb-file-icon">
-                    <i class="fas ${this.icon}"></i>
-                </div>
-                <div class="jsfb-file-details" title="${this.filename}">
-                    <p class="jsfb-file-name">${this.filename}</p>
-                    <p class="jsfb-file-size">${toHumanSize(this.size)}</p>
-                    <p class="jsfb-file-modified">${this.modified}</p>
-                </div>
-            </div>
-        `;
-
-        if ((overlay !== null) || (contextMenu !== null)) {
-            let overlayElement = document.createElement('div');
-            overlayElement.classList.add('jsfb-file-overlay');
-            if (overlay !== null) {
-                overlayElement.appendChild(overlay);
-            }
-            if (contextMenu !== null) {
-                overlayElement.appendChild(contextMenu);
-            }
-            element.appendChild(overlayElement);
-        }
-
-        element.dataset.filename = btoa_utf8(this.filename);
-        element.dataset.size = this.size;
-        element.dataset.modified = this.modified;
-        element.dataset.type = this.type;
-
-        if (this.selected) {
-            element.querySelector('.jsfb-file').classList.add('selected');
-        }
-        this._htmlElement = element;
-        element = element.querySelector('.jsfb-file');
-        element.addEventListener('click', () => {
-            if (this._clickHandler instanceof Function) {
-                this._clickHandler(this);
-            }
-        });
-        element.addEventListener('dblclick', () => {
-            if (this._dblclickHandler instanceof Function) {
-                this._dblclickHandler(this);
-            }
-        });
-        return this._htmlElement;
-    }
-    clickHandler(handler) {
-        this._clickHandler = handler;
-    }
-    dblclickHandler(handler) {
-        this._dblclickHandler = handler;
-    }
-}
 class FileBrowser {
     static defaultOptions = {
         onFileClick: (file) => { },
@@ -236,6 +17,8 @@ class FileBrowser {
         onFileShare: null,
         onFileInfo: null,
         mode: 'list',
+        orderColumn: 'filename',
+        orderAscending: true
     }
     _generateContextMenu() {
         let contextMenu = {};
@@ -299,13 +82,30 @@ class FileBrowser {
         this.element = element;
         this.filelistElement = element.querySelector('.jsfb-filelist');
 
+        // Order of the columns
+        this.orderColumn = this.options.orderColumn;
+        this.orderAscending = this.options.orderAscending;
+
         // It is possible to pass a context menu as an array of options, but if not, we generate a default one
         //  based on the options passed to the constructor
         if (this.options.customContextMenu === null) {
             this.options.customContextMenu = this._generateContextMenu();
         }
         this.setMode(this.options.mode);
+        this.options.onFileHtmlElementCreated = this.options.onFileHtmlElementCreated.bind(this);
+        this.options.onFileClick = this.options.onFileClick.bind(this);
+        this.options.onFileDblClick = this.options.onFileDblClick?.bind(this);
+        this.options.onFileDownload = this.options.onFileDownload?.bind(this);
+        this.options.onFileDelete = this.options.onFileDelete?.bind(this);
+        this.options.onFileRename = this.options.onFileRename?.bind(this);
+        this.options.onFileCopy = this.options.onFileCopy?.bind(this);
+        this.options.onFileMove = this.options.onFileMove?.bind(this);
+        this.options.onFileShare = this.options.onFileShare?.bind(this);
+        this.options.onFileInfo = this.options.onFileInfo?.bind(this);
+
+        this._elementsPlace = null;
     }
+
     setMode(mode) {
         switch (mode.toLowerCase()) {
             case 'list':
@@ -316,12 +116,104 @@ class FileBrowser {
                 throw new Error('Invalid mode');
         }
     }
+
+    _renderFile(file, nextFile = null) {
+        let element = null;
+        switch (this.mode) {
+            case 'list':
+                element = file.tableRow();
+                break;
+            case 'grid':
+                element = file.htmlElement(this.options.overlayGenerator);
+                break;
+        }
+        if (this.options.onFileClick instanceof Function) {
+            file.clickHandler(this.options.onFileClick.bind(this));
+        }
+        if (this.options.onFileDblClick instanceof Function) {
+            file.dblclickHandler(this.options.onFileDblClick.bind(this));
+        }
+        this.options.onFileHtmlElementCreated.call(this, element, file, this.mode);
+        if (nextFile !== null) {
+            nextFile._htmlElement.insertAdjacentElement('beforebegin', element);
+        } else {
+            this._elementsPlace.appendChild(element);
+        }
+    }
+
+    _getSortFunction(column = null, ascending = null) {
+        if (column === null) {
+            column = this.orderColumn;
+        }
+        if (ascending === null) {
+            ascending = this.orderAscending;
+        }
+        let sortFunction = null;
+        switch (column) {
+            case 'filename':
+                if (ascending) {
+                    sortFunction = (a, b) => {
+                        return a.filename.localeCompare(b.filename);
+                    };
+                } else {
+                    sortFunction = (a, b) => {
+                        return b.filename.localeCompare(a.filename);
+                    };
+                }
+                break;
+            case 'size':
+                if (ascending) {
+                    sortFunction = (a, b) => {
+                        return a.size - b.size;
+                    }
+                } else {
+                    sortFunction = (a, b) => {
+                        return b.size - a.size;
+                    }
+                }
+                break;
+            case 'modified':
+                if (ascending) {
+                    sortFunction = (a, b) => {
+                        return a.modified.localeCompare(b.modified);
+                    }
+                } else {
+                    sortFunction = (a, b) => {
+                        return b.modified.localeCompare(a.modified);
+                    }
+                }
+                break;
+            default:
+                throw new Error('Invalid column');
+
+        }
+        return sortFunction;
+    }
+
+    _findNextFile(file) {
+        let sortFunction = this._getSortFunction();
+        for (let i = 0; i < this.filelist.length; i++) {
+            if (sortFunction(file, this.filelist[i]) < 0) {
+                return this.filelist[i];
+            }
+        }
+        return null;
+    }
+
     addFile(filename, size, modified) {
         let file = new FileInFileBrowser(filename, size, modified, this.options.customContextMenu);
-        this.filelist.push(file);
-        this.render();
+        let nextFile = this._findNextFile(file);
+        if (nextFile !== null) {
+            this.filelist.splice(this.filelist.indexOf(nextFile), 0, file);
+            this._renderFile(file, nextFile);
+        } else {
+            // If there is no next file, we add it at the end
+            this.filelist.push(file);
+            this._renderFile(file);
+        }
         return file;
     }
+
     removeFile(file) {
         let index = this.filelist.indexOf(file);
         if (index >= 0) {
@@ -329,11 +221,17 @@ class FileBrowser {
         }
         this.render();
     }
-    renderList() {
+    _createGrid() {
+        let grid = document.createElement('div');
+        grid.classList.add('jsfb-filelist-grid');
+        this._elementsPlace = grid;
+        return grid;
+    }
+    _createList() {
         let table = document.createElement('table');
         table.classList.add('jsfb-filelist-table');
         table.innerHTML = `
-            <thead>
+            <thead class="jsfb-filelist-header">
                 <tr>
                     <th class="jsfb-file-name">Name</th>
                     <th class="jsfb-file-size">Size</th>
@@ -342,51 +240,63 @@ class FileBrowser {
             </thead>
             <tbody></tbody>
         `;
-        let tbody = table.querySelector('tbody');
-        this.filelist.forEach(file => {
-            let element = file.tableRow();
-            if (this.options.onFileClick instanceof Function) {
-                file.clickHandler(this.options.onFileClick.bind(this));
-            }
-            if (this.options.onFileDblClick instanceof Function) {
-                file.dblclickHandler(this.options.onFileDblClick.bind(this));
-            }
-            this.options.onFileHtmlElementCreated.call(this, element, file, this.mode);
-            tbody.appendChild(element);
-        });
+        this._elementsPlace = table.querySelector('tbody');
         return table;
-    }
-    renderGrid() {
-        let grid = document.createElement('div');
-        grid.classList.add('jsfb-filelist-grid');
-        this.filelist.forEach(file => {
-            let element = file.htmlElement(this.options.overlayGenerator);
-            if (this.options.onFileClick instanceof Function) {
-                file.clickHandler(this.options.onFileClick.bind(this));
-            }
-            if (this.options.onFileDblClick instanceof Function) {
-                file.dblclickHandler(this.options.onFileDblClick.bind(this));
-            }
-            this.options.onFileHtmlElementCreated.call(this, element, file, this.mode);
-            grid.appendChild(element);
-        });
-        return grid;
     }
     render(mode = null) {
         if (mode !== null) {
             this.setMode(mode);
         }
         this.filelistElement.innerHTML = '';
+        let element = null;
         switch (this.mode) {
             case 'list':
-                let table = this.renderList();
-                this.filelistElement.appendChild(table);
-                new ResizableColumnTable(table);
+                element = this._createList();
                 break;
             case 'grid':
-                this.filelistElement.appendChild(this.renderGrid());
+                element = this._createGrid();
                 break;
         }
+        this.filelist.forEach(file => {
+            this._renderFile(file);
+        });
+        this.filelistElement.appendChild(element);
+        if (this.mode === 'list') {
+            new ResizableColumnTable(element, {
+                sortableHeaders: true,
+                onSort: (column, ascending) => {
+                    switch (column.textContent.trim().toLowerCase()) {
+                        case 'name':
+                            this.sort('filename', ascending == 'asc');
+                            break;
+                        case 'size':
+                            this.sort('size', ascending == 'asc');
+                            break;
+                        case 'modified':
+                            this.sort('modified', ascending == 'asc');
+                            break;
+                    }
+                }
+            });
+        }
+    }
+    sort(column, ascending) {
+        // implement manual sorting, by calling render with the new order
+        let sortFunction = this._getSortFunction(column, ascending);
+        this.filelist.sort(sortFunction);
+        this._elementsPlace.innerHTML = '';
+        this.filelist.forEach(file => {
+            this._renderFile(file);
+        });
+        // for (let i = 0; i < this.filelist.length; i++) {
+        //     for (let j = i + 1; j < this.filelist.length; j++) {
+        //         if (sortFunction(this.filelist[i], this.filelist[j]) > 0) {
+        //             let temp = this.filelist[i];
+        //             this.filelist[i] = this.filelist[j];
+        //             this.filelist[j] = temp;
+        //         }
+        //     }
+        // }
     }
 }
 

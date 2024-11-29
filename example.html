@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="src/css/jsfb-dropdown.css">
         <script src="src/js/utils.js"></script>
         <script src="src/js/resizablecolumntable.js"></script>
+        <script src="src/js/fileinbrowser.js"></script>
         <script src="src/js/filebrowser.js"></script>
         <script src="src/js/dropdown.js"></script>
         <style>
@@ -29,17 +30,24 @@
                 display: flex;
                 flex-direction: column;
             }
-            .jsfb-file.selected {
+            .jsfb-file-wrapper.selected .jsfb-file, tr.selected {
                 background-color: #eee;
                 border-color: #ddd;
+                position: relative
             }
-            .jsfb-file.selected::before {
+            .jsfb-file-wrapper.selected .jsfb-file::before, tr.selected::after {
                 position: absolute;
                 font: var(--fa-font-regular);
                 content: '\f14a';
                 margin-top: -0.375em;
                 margin-left: -0.375em;
                 color: #777;
+            }
+            tr.selected::after {
+                right: 0;
+                top: 0.625em;
+                margin: 0;
+                height: 100%;
             }
             .jsfb-file-overlay {
                 position: absolute;
@@ -81,6 +89,33 @@
                 display: flex;
                 justify-content: space-between;
                 vertical-align: middle;
+            }
+            /** let's give a look more "mac" to the table header */
+            .jsfb-filelist-header {
+                background-color: #f8f9fa;
+                border-bottom: solid 1px #ccc;
+            }
+            .jsfb-filelist-header th {
+                padding: 0.5em 1.5em;
+                font-weight: normal;
+                text-align: left;
+                position: relative;
+                color: #777;
+                font-size: 0.8em;
+            }
+            .jsfb-filelist-header th i {
+                margin-right: 0.5em;
+                position: absolute;
+                right: 0;
+            }
+            .jsfb-filelist-header th i.sorter {
+                cursor: pointer;
+            }
+            .jsfb-filelist-header th i.sorter.up::before {
+                content: '\f0de';
+            }
+            .jsfb-filelist-header th i.sorter.down::before {
+                content: '\f0dd';
             }
         </style>
         <script>
@@ -255,9 +290,26 @@
                     // }
                 }
             );
-            for (let i = 0; i < 20; i++) {
-                let file = fileBrowser.addFile('a very long file name for a file number ' + i + '.txt', 1200 + i * 100, '2022-01-01 12:00:00');
+            fileBrowser.render();
+
+            function addFile(i) {
+                if (i < 20) {
+                    console.log('Adding file', i);
+                    let extensions = ['txt', 'jpg', 'png', 'pdf', 'docx', 'ppt', 'xls', 'wav', 'mp3', 'mov'];
+                    // get a random extension
+                    let extension = extensions[Math.floor(Math.random() * extensions.length)];
+                    let file = fileBrowser.addFile('file' + i + '.' + extension , 1200 + i * 100, '2022-01-01 12:00:00');
+                    setTimeout(() => {
+                        addFile(i + 1);
+                    }, 1000);
+                }
             }
+            addFile(0);
+            // for (let i = 0; i < 20; i++) {
+            //     let file = fileBrowser.addFile('a very long file name for a file number ' + i + '.txt', 1200 + i * 100, '2022-01-01 12:00:00');
+            // }
+
+
             let file1 = fileBrowser.addFile('file1.txt', 1200, '2022-01-01 12:00:00');
             let file2 = fileBrowser.addFile('file2.jpg', 1300, '2022-01-02 12:00:00');
             let file3 = fileBrowser.addFile('file3.png', 1400, '2022-01-03 12:00:00');

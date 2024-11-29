@@ -33,28 +33,26 @@
     width: 100%;
 }
 .jsfb-filelist-table td {
-    padding: var(--jsfb-filelist-gutter-y) 0;
+    padding: var(--jsfb-filelist-gutter-y) 1.5em;
     vertical-align: middle;
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
     /* white-space: nowrap; */
 }
+.jsfb-filelist-table td {
+    color: #666;
+    font-size: 0.8em;
+}
 .jsfb-filelist-table td.jsfb-file-size {
-    color: #666;
-    font-size: 0.8em;
+    text-align: right;
 }
-.jsfb-filelist-table td.jsfb-file-modified {
-    color: #666;
-    font-size: 0.8em;
-}
-.jsfb-filelist-table th.jsfb-file-name {
+/* .jsfb-filelist-table th.jsfb-file-name {
     padding-left: 1.5em;
-}
+}*/
 .jsfb-filelist-table td span.jsfb-file-icon i {
-    width: 1.5em;
-    text-align: center;
-}
+    width: 1em;
+} 
 .jsfb-filelist-table th {
     position: relative;
 }
@@ -66,6 +64,7 @@
     cursor: col-resize;
     user-select: none;
     z-index: 10;
+    height: 100%;
 }
 
 .jsfb-filelist-table .jsfb-resizer::after {
@@ -80,11 +79,11 @@
 
 .jsfb-filelist-table .jsfb-resizer.resizing,
 .jsfb-filelist-table .jsfb-resizer:hover {
-    background-color: #f66;
+    cursor: col-resize;
 }
-
-
-
+.jsfb-filelist-table .resizing {
+    pointer-events: none;
+}
 
 .jsfb-filelist-grid {
     display: flex;
