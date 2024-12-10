@@ -1,58 +1,46 @@
 class FileInFileBrowser {
-    static extensionToIcon = {
-        'txt': 'fa-file-alt',
-        'pdf': 'fa-file-pdf',
-        'doc': 'fa-file-word',
-        'docx': 'fa-file-word',
-        'xls': 'fa-file-excel',
-        'xlsx': 'fa-file-excel',
-        'ppt': 'fa-file-powerpoint',
-        'pptx': 'fa-file-powerpoint',
-        'jpg': 'fa-file-image',
-        'jpeg': 'fa-file-image',
-        'png': 'fa-file-image',
-        'gif': 'fa-file-image',
-        'mp3': 'fa-file-audio',
-        'wav': 'fa-file-audio',
-        'mov': 'fa-file-video',
-        'mp4': 'fa-file-video',
-        'avi': 'fa-file-video',
-        'zip': 'fa-file-archive',
-        'rar': 'fa-file-archive',
-        'tar': 'fa-file-archive',
-        'gz': 'fa-file-archive',
-        '7z': 'fa-file-archive',
-        'exe': 'fa-file-executable',
-        'js': 'fa-file-code',
-        'css': 'fa-file-code',
-        'html': 'fa-file-code',
-        'php': 'fa-file-code',
-        'py': 'fa-file-code',
-        'java': 'fa-file-code',
-        'c': 'fa-file-code',
-        'cpp': 'fa-file-code',
-        'h': 'fa-file-code',
-        'hpp': 'fa-file-code',
-        'json': 'fa-file-code',
-        'xml': 'fa-file-code',
-        'csv': 'fa-file-excel',
-        'file': 'fa-file',
+    static defaultOptions = {
+        icon: "jsfb-svg-icon jsfb-svg-icon-file fa fa-file",
+        type: 'file',
+        contextMenu: null,
+        isDirectory: false,
+        onClick: null,
+        onDoubleClick: null,
+        previewUrl: null,
     };
-    constructor(filename, size, modified, contextMenu = null) {
+
+    constructor(filename, size, modified, options = {}) {
+        this.options = Object.assign({}, FileInFileBrowser.defaultOptions, options);
         this.filename = filename;
         this.size = size;
-        this.modified = modified;
-        this.type = filename.split('.').pop().toLowerCase();
-        if (!this.type in FileInFileBrowser.extensionToIcon) {
-            this.type = 'file';
+        this.type = this.options.type??'file';
+        this.isDirectory = this.options.isDirectory??false;
+
+        this.modified = null;
+        if ((typeof modified === 'string') || (modified instanceof String)) {
+            // Check if the string is a number
+            if (!isNaN(modified)) {
+                modified = parseInt(modified);
+            }
+            else {
+                let date = new Date(modified);
+                if (date.toString() !== 'Invalid Date') {
+                    modified = date;
+                }
+            }
         }
-        this.icon = FileInFileBrowser.extensionToIcon[this.type] || 'fa-file';
+        if ((typeof modified === 'number') || (modified instanceof Number)) {
+            let date = new Date(modified);
+            if (date.toString() !== 'Invalid Date') {
+                modified = date;
+            }
+        }
+        if (modified instanceof Date) {
+            this.modified = modified;
+        } 
+
         this._htmlElement = null;
-        // this._tableRow = null;
         this.selected = false;
-        this._clickHandler = null;
-        this._dblclickHandler = null;
-        this._contextMenu = contextMenu;
     }
     select() {
         this.selected = true;
@@ -84,24 +72,31 @@ class FileInFileBrowser {
         }
     }
     createContextMenu() {
-        if (this._contextMenu === null) {
+        if (this.options.contextMenu === null) {
             return null;
         }
         let contextMenu = document.createElement('div');
         contextMenu.classList.add('jsfb-dropdown', 'jsfb-dropdown-s', 'jsfb-file-context-menu');
         contextMenu.innerHTML = `
-            <button class="jsfb-dropdown-toggle" type="button">
-                <i class="fas fa-ellipsis-v"></i>
+            <button class="jsfb-dropdown-toggle no-chevron" type="button">
+                <i class="jsfb-svg-icon jsfb-svg-icon-ellipsis-v fa fa-ellipsis-v"></i>
             </button>`;
         let dropdownContent = document.createElement('ul');
         dropdownContent.classList.add('jsfb-dropdown-content');
-        if (this._contextMenu instanceof Array) {
-            this._contextMenu = this._contextMenu.reduce((acc, item) => {
+
+        let contextMenuOptions = this.options.contextMenu;
+
+        if (contextMenuOptions instanceof Array) {
+            contextMenuOptions = contextMenuOptions.reduce((acc, item) => {
                 acc[item] = {};
                 return acc;
             }, {});
         }
-        for (let option in this._contextMenu) {
+        for (let option in contextMenuOptions) {
+            if (option.startsWith('__')) {
+                continue;
+            }
+
             // Create the structure for the context menu
             let item = document.createElement('li');
 
@@ -109,13 +104,13 @@ class FileInFileBrowser {
             let button = document.createElement('button');
             button.type = 'button';
             button.dataset.action = option;
-            let text = this._contextMenu[option].label ?? option;
-            if (this._contextMenu[option].icon) {
-                button.innerHTML = `<i class="fas ${this._contextMenu[option].icon}"></i> ${text}`;
+            let text = contextMenuOptions[option].label ?? option;
+            if (contextMenuOptions[option].icon) {
+                button.innerHTML = `<i class="${contextMenuOptions[option].icon}"></i> ${text}`;
             } else {
                 button.innerText = text;
             }
-            let handler = this._contextMenu[option].handler ?? this._contextMenu[option];
+            let handler = contextMenuOptions[option].handler ?? contextMenuOptions[option];
             if (handler instanceof Function) {
                 button.addEventListener('click', (file) => {
                     handler(this);
@@ -128,36 +123,33 @@ class FileInFileBrowser {
         return contextMenu;
     }
     tableRow() {
-        // if (this._htmlElement !== null) {
-        //     return this._htmlElement;
-        // }
         if (this._htmlElement !== null) {
             this._htmlElement.remove();
         }
 
         let row = document.createElement('tr');
         row.innerHTML = `
-            <td class="jsfb-file-name"><span class="jsfb-file-icon"><i class="fas ${this.icon}"></i></span> ${this.filename}</td>
+            <td class="jsfb-file-name"><span class="jsfb-file-icon"><i class="${this.options.icon}"></i></span> ${this.filename}</td>
             <td class="jsfb-file-size">${toHumanSize(this.size)}</td>
-            <td class="jsfb-file-modified">${this.modified}</td>
+            <td class="jsfb-file-modified">${this.modified?.toLocaleString()}</td>
         `;
 
-        row.dataset.filename = this.filename//btoa_utf8(this.filename);
+        row.dataset.filename = btoa_utf8(this.filename);
         row.dataset.size = this.size;
-        row.dataset.modified = this.modified;
-        row.dataset.type = this.type;
+        row.dataset.modified = this.modified?.getTime();
+        row.dataset.type = this.options.type;
 
         if (this.selected) {
             row.classList.add('selected');
         }
         row.addEventListener('click', () => {
-            if (this._clickHandler instanceof Function) {
-                this._clickHandler(this);
+            if (this.options.onClick instanceof Function) {
+                this.options.onClick(this);
             }
         });
         row.addEventListener('dblclick', () => {
-            if (this._dblclickHandler instanceof Function) {
-                this._dblclickHandler(this);
+            if (this.options.onDoubleClick instanceof Function) {
+                this.options.onDoubleClick(this);
             }
         });
         if (this.selected) {
@@ -167,10 +159,7 @@ class FileInFileBrowser {
         this._htmlElement = row;
         return this._htmlElement;
     }
-    htmlElement(overlayGenerator = null) {
-        // if (this._htmlElement !== null) {
-        //     return this._htmlElement;
-        // }
+    previewElement(overlayGenerator = null) {
         if (this._htmlElement !== null) {
             this._htmlElement.remove();
         }
@@ -180,19 +169,96 @@ class FileInFileBrowser {
             overlay = overlayGenerator(this);
         }
 
-        let contextMenu = this.createContextMenu();            
+        let contextMenu = this.createContextMenu();
+
+        let element = document.createElement('div');
+        element.classList.add('jsfb-preview-file-wrapper');
+        element.innerHTML = `
+            <div class="jsfb-preview-file">
+            </div>
+        `;
+        let previewElement = element.querySelector('.jsfb-preview-file');
+        if (this.options.previewUrl !== null) {
+            previewElement.innerHTML = `
+                <div class="jsfb-preview-image">
+                    <div class="jsfb-preview-image-background" style="background-image: url('${this.options.previewUrl}')"></div>
+                    <div class="jsfb-preview-image-image" style="background-image: url('${this.options.previewUrl}')"></div>
+                </div>
+            `;
+        } else {
+            previewElement.innerHTML = `
+                <div class="jsfb-file-icon">
+                    <i class="${this.options.icon}"></i>
+                </div>`;
+        }
+        previewElement.innerHTML += `
+                <div class="jsfb-file-details">
+                    <p class="jsfb-file-name">${this.filename}</p>
+                    <p class="jsfb-file-size">${toHumanSize(this.size)}</p>
+                    <p class="jsfb-file-modified">${this.modified?.toLocaleString()}</p>
+                </div>
+        `;
+
+        if ((overlay !== null) || (contextMenu !== null)) {
+            let overlayElement = document.createElement('div');
+            overlayElement.classList.add('jsfb-preview-overlay');
+            if (overlay !== null) {
+                overlayElement.appendChild(overlay);
+            }
+            if (contextMenu !== null) {
+                overlayElement.appendChild(contextMenu);
+            }
+            element.appendChild(overlayElement);
+        }
+
+        element.dataset.filename = btoa_utf8(this.filename);
+        element.dataset.size = this.size;
+        element.dataset.modified = this.modified?.getTime();
+        element.dataset.type = this.options.type;
+
+        if (this.selected) {
+            element.classList.add('selected');
+        }
+        this._htmlElement = element;
+        // element = element.querySelector('.jsfb-preview-file');
+        element.addEventListener('click', () => {
+            if (this.options.onClick instanceof Function) {
+                this.options.onClick(this);
+            }
+        });
+        element.addEventListener('dblclick', () => {
+            if (this.options.onDoubleClick instanceof Function) {
+                this.options.onDoubleClick(this);
+            }
+        }
+        );
+        return this._htmlElement;
+    }
+
+
+    gridElement(overlayGenerator = null) {
+        if (this._htmlElement !== null) {
+            this._htmlElement.remove();
+        }
+
+        let overlay = null;
+        if (overlayGenerator instanceof Function) {
+            overlay = overlayGenerator(this);
+        }
+
+        let contextMenu = this.createContextMenu();     
 
         let element = document.createElement('div');
         element.classList.add('jsfb-file-wrapper');
         element.innerHTML = `
             <div class="jsfb-file">
                 <div class="jsfb-file-icon">
-                    <i class="fas ${this.icon}"></i>
+                    <i class="${this.options.icon}"></i>
                 </div>
                 <div class="jsfb-file-details" title="${this.filename}">
                     <p class="jsfb-file-name">${this.filename}</p>
                     <p class="jsfb-file-size">${toHumanSize(this.size)}</p>
-                    <p class="jsfb-file-modified">${this.modified}</p>
+                    <p class="jsfb-file-modified">${this.modified?.toLocaleString()}</p>
                 </div>
             </div>
         `;
@@ -211,8 +277,8 @@ class FileInFileBrowser {
 
         element.dataset.filename = btoa_utf8(this.filename);
         element.dataset.size = this.size;
-        element.dataset.modified = this.modified;
-        element.dataset.type = this.type;
+        element.dataset.modified = this.modified?.getTime();
+        element.dataset.type = this.options.type;
 
         if (this.selected) {
             element.classList.add('selected');
@@ -220,13 +286,13 @@ class FileInFileBrowser {
         this._htmlElement = element;
         element = element.querySelector('.jsfb-file');
         element.addEventListener('click', () => {
-            if (this._clickHandler instanceof Function) {
-                this._clickHandler(this);
+            if (this.options.onClick instanceof Function) {
+                this.options.onClick(this);
             }
         });
         element.addEventListener('dblclick', () => {
-            if (this._dblclickHandler instanceof Function) {
-                this._dblclickHandler(this);
+            if (this.options.onDoubleClick instanceof Function) {
+                this.options.onDoubleClick(this);
             }
         });
         return this._htmlElement;

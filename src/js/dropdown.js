@@ -2,12 +2,34 @@ if (typeof exports === 'undefined') {
     exports = window;
 }
 
+/**
+ * JSFBDropdown
+ * 
+ * A simple dropdown component that can be used to create dropdowns with a toggle button and a content. It is
+ *   very similar to the dropdowns in Bootstrap, but it is much simpler and is included in this library to
+ *   avoid the need to include Bootstrap.
+ * 
+ * In fact, it is only used to create a context menu in the file browser cards, to offer the options regarding
+ *   the file.
+ * 
+ * Anyway it can be used to create any kind of dropdown.
+ */
+
 class JSFBDropdown {
     static defaults = {
+        // Close the dropdown when clicked outside of the dropdown
         closeOnOutsideClick: true,
-        openingSide: "auto",                    // auto, left, right
+        // The side to open the dropdown content (auto, left, right)
+        openingSide: "auto",
+        // When openingSide is auto, this option will be used to determine the rect to compare the distance 
+        //  to the right and left edges. If true, the rect of the page will be used, otherwise the rect of 
+        //  the parent element
         openingSideToPage: false,
     };
+
+    static mutationObserver = new MutationObserver((mutations) => {
+        JSFBDropdown.fromDOM(document.querySelectorAll('.jsfb-dropdown'));
+    });
 
     static fromDOM(objects, options = {}) {
         let result = [];
@@ -59,12 +81,11 @@ class JSFBDropdown {
         this.optionsInMenu = dropdown.querySelectorAll('.jsfb-dropdown-content'),
         this.closeHandler = (event) => {
             this.hide();
-            console.log(event.target);
-            console.log(event.target.onclick);
-            console.log('closeHandler');
+            event.stopPropagation();
         }
-        this.toggle.addEventListener('click', () => {
+        this.toggle.addEventListener('click', (event) => {
             this.toggleOpen();
+            event.stopPropagation();
         });
         this.optionsInMenu.forEach((option) => {
             option.addEventListener('click', this.closeHandler);
@@ -138,12 +159,8 @@ exports.JSFBDropdown = JSFBDropdown;
 exports.JSFBDropdown.version = "1.0.0";
 
 document.addEventListener('DOMContentLoaded', () => {
-    JSFBDropdown.fromDOM(document.querySelectorAll('.jsfb-dropdown'));
-    let mutationObserver = new MutationObserver((mutations) => {
-        JSFBDropdown.fromDOM(document.querySelectorAll('.jsfb-dropdown'));
-    });
-    mutationObserver.observe(document.body, {
+    JSFBDropdown.mutationObserver.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
     });
 });

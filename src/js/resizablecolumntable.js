@@ -1,8 +1,42 @@
+const ClassesMixin = {
+    hasClasses: function(classes) {
+        if (typeof classes === 'string') {
+            classes = classes.split(' ').map((c) => c.trim()).filter((c) => c.length > 0);
+        }
+        if (!Array.isArray(classes)) {
+            throw new Error('Classes must be an array or a string');
+        }
+        return classes.every((c) => this.classList.contains(c));
+    },
+    addClasses: function(classes) {
+        if (typeof classes === 'string') {
+            classes = classes.split(' ').map((c) => c.trim()).filter((c) => c.length > 0);
+        }
+        if (!Array.isArray(classes)) {
+            throw new Error('Classes must be an array or a string');
+        }
+        classes.forEach((c) => this.classList.add(c));
+    },
+    removeClasses: function(classes) {
+        if (typeof classes === 'string') {
+            classes = classes.split(' ').map((c) => c.trim()).filter((c) => c.length > 0);
+        }
+        if (!Array.isArray(classes)) {
+            throw new Error('Classes must be an array or a string');
+        }
+        classes.forEach((c) => this.classList.remove(c));
+    }
+};
+
 class ResizableColumnTable {
     static defaultOptions = {
         firstColumn: 0,
         lastColumn: -1,
         sortableHeaders: true,
+        classSorter: 'sorter fas jsfb-svg-icon',
+        classUnsorted: 'jsfb-svg-icon-sort fa-sort',
+        classSorterUp: 'up jsfb-svg-icon-sort-up fa-sort-up',
+        classSorterDown: 'down jsfb-svg-icon-sort-down fa-sort-down',
         onSort: (header, direction) => { }
     };
 
@@ -27,7 +61,7 @@ class ResizableColumnTable {
         // Create the resizer elements
         this.resizers = [];
         let previousHeader = null;
-        for (let i = this.options.firstColumn; i < this.options.lastColumn ; i++) {
+        for (let i = this.options.firstColumn; i < this.options.lastColumn + 1 ; i++) {
             let header = headers[i];
             let resizer = document.createElement('div');
             resizer.classList.add('jsfb-resizer');
@@ -41,7 +75,7 @@ class ResizableColumnTable {
             }
             previousHeader = header;
         }
-        if (previousHeader != null) {
+        if ((previousHeader != null) && (previousHeader != headers[headers.length - 1])) {
             previousHeader._nextHeader = headers[headers.length - 1];
         }
 
@@ -67,28 +101,36 @@ class ResizableColumnTable {
             let header = this.headers[index];
             // Add the sorting icon
             let sortingIcon = document.createElement('i');
-            sortingIcon.classList.add('sorter');
-            sortingIcon.classList.add('fas', 'fa-sort');
+            Object.assign(sortingIcon, ClassesMixin);
+            sortingIcon.addClasses(this.options.classSorter);
+            sortingIcon.addClasses(this.options.classUnsorted);
 
             header.addEventListener('click', (event) => {
                 header.closest('thead').querySelectorAll('.sorter').forEach((icon) => {
                     if (icon != sortingIcon) {
-                        icon.classList.remove('up');
-                        icon.classList.remove('down');
+                        icon.removeClasses(this.options.classSorterUp);
+                        icon.removeClasses(this.options.classSorterDown);
+                        icon.addClasses(this.options.classUnsorted);
                     }
                 });
-                if (sortingIcon.classList.contains('up')) {
-                    sortingIcon.classList.remove('up');
-                    sortingIcon.classList.add('down');
+
+                if (sortingIcon.hasClasses(this.options.classSorterUp)) {
+                    sortingIcon.removeClasses(this.options.classUnsorted);
+                    sortingIcon.removeClasses(this.options.classSorterUp);
+                    sortingIcon.addClasses(this.options.classSorterDown);
                 } else
-                if (sortingIcon.classList.contains('down')) {
-                    sortingIcon.classList.remove('down');
-                    sortingIcon.classList.add('up');
+                if (sortingIcon.hasClasses(this.options.classSorterDown)) {
+                    sortingIcon.removeClasses(this.options.classUnsorted);
+                    sortingIcon.removeClasses(this.options.classSorterDown);
+                    sortingIcon.addClasses(this.options.classSorterUp);
                 } else {
-                    sortingIcon.classList.add('up');
+                    sortingIcon.removeClasses(this.options.classUnsorted);
+                    sortingIcon.addClasses(this.options.classSorterUp);
+                    sortingIcon.removeClasses(this.options.classSorterDown);
                 }
+
                 if (this.options.onSort instanceof Function) {
-                    this.options.onSort(header, sortingIcon.classList.contains('up') ? 'asc' : 'desc');
+                    this.options.onSort(header, sortingIcon.hasClasses(this.options.classSorterUp) ? 'asc' : 'desc');
                 }
             });
             header.appendChild(sortingIcon);
@@ -133,7 +175,6 @@ class ResizableColumnTable {
             x = event.clientX;
             width = parseInt(window.getComputedStyle(th).width, 10);
             next_header = th._nextHeader??null;
-            console.log(next_header);
             if (next_header != null) {
                 next_width = parseInt(window.getComputedStyle(next_header).width, 10);
             }

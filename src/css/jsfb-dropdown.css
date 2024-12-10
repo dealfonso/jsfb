@@ -43,14 +43,10 @@
 .jsfb-dropdown .jsfb-dropdown-toggle {
     background-color: transparent;
     border: none;
-    /* color: #777; */
     font-size: var(--jsfb-dropdown-font-size);
     padding: var(--jsfb-dropdown-toggle-padding-y) var(--jsfb-dropdown-toggle-padding-x);
 }
-.jsfb-dropdown .jsfb-dropdown-toggle:hover {
-    background-color: #eee;
-    /* color: #333; */
-}
+
 .jsfb-dropdown ul.jsfb-dropdown-content {
     overflow: hidden;
     display: none;
@@ -96,9 +92,21 @@
     padding: 0;
 }
 
-ul.jsfb-dropdown-content li button.selected::after, ul.jsfb-dropdown-content li a.selected::after {
+ul.jsfb-dropdown-content button.selected::after, ul.jsfb-dropdown-content a.selected::after {
     font-size: 75% !important;
     content: '\f00c';
     font: var(--fa-font-solid);
     margin-left: 0.75em;
+}
+
+/** add the chevron down to the dropdown toggle */
+.jsfb-dropdown-toggle::after {
+    content: '\f078';
+    font: var(--fa-font-solid);
+    margin-left: 0.1em;
+    vertical-align: middle;
+    font-size: 0.6em;
+}
+.jsfb-dropdown-toggle.no-chevron::after {
+    content: '';
 }

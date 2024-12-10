@@ -1,0 +1,162 @@
+.jsfb-preview-file-wrapper .jsfb-preview-file {
+    position: relative;
+    --jsfb-preview-file-height: 288px;
+    height: calc(var(--jsfb-preview-file-height) - var(--jsfb-filelist-file-padding) * 2);
+    width: calc(var(--jsfb-preview-file-height) - var(--jsfb-filelist-file-padding) * 2);
+    border: var(--jsfb-filelist-border);
+    border-radius: var(--jsfb-filelist-border-radius);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    padding: var(--jsfb-filelist-file-padding);
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+}
+
+.jsfb-preview-file-big .jsfb-preview-file {
+    --jsfb-preview-file-height: 432px;
+}
+.jsfb-preview-file-bigger .jsfb-preview-file {
+    --jsfb-preview-file-height: 432px;
+}
+
+@media screen and (min-width: 768px) {
+    .jsfb-preview-file-md-big .jsfb-preview-file {
+        --jsfb-preview-file-height: 432px;
+    }
+    .jsfb-preview-file-md-bigger .jsfb-preview-file {
+        --jsfb-preview-file-height: 576px;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .jsfb-preview-file-lg-big .jsfb-preview-file {
+        --jsfb-preview-file-height: 432px;
+    }
+    .jsfb-preview-file-lg-bigger .jsfb-preview-file {
+        --jsfb-preview-file-height: 576px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .jsfb-preview-file-xl-big .jsfb-preview-file {
+        --jsfb-preview-file-height: 432px;
+    }
+    .jsfb-preview-file-xl-bigger .jsfb-preview-file {
+        --jsfb-preview-file-height: 576px;
+    }
+}
+
+.jsfb-preview-file-wrapper .jsfb-file-icon {
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 2em);
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.jsfb-preview-file-wrapper .jsfb-file-icon i {
+    font-size: calc(var(--jsfb-preview-file-height) / 2);
+}
+
+.jsfb-preview-file-wrapper .jsfb-file-details {
+    position: absolute;
+    width: 100%;
+    height: 3em;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: rgba(200, 200, 200, 0.6);
+}
+
+.jsfb-preview-file-wrapper .jsfb-file-details p {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.jsfb-preview-file-wrapper .jsfb-file-name {
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 90%;
+    white-space: nowrap;
+}          
+
+.jsfb-preview-file-wrapper .jsfb-file-size {
+    display: none;
+    font-size: 0.8em;
+    color: #666;
+}
+
+.jsfb-preview-file-wrapper .jsfb-file-modified {
+    display: none;
+    font-size: 0.8em;
+    color: #666;
+}
+
+.jsfb-preview-file-wrapper.selected .jsfb-preview-file {
+    border-color: #ddd;
+    position: relative
+}
+
+.jsfb-preview-file-wrapper.selected .jsfb-preview-file::before {
+    position: absolute;
+    font: var(--fa-font-regular);
+    content: '\f14a';
+    top: 0;
+    left: 0;
+    color: #eee;
+    text-align: left;
+    padding: 0.5em;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(128, 128, 128, 0.4);
+    z-index: 1;
+}
+
+.jsfb-preview-file-wrapper .jsfb-preview-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+} 
+
+.jsfb-preview-file-wrapper .jsfb-preview-image .jsfb-preview-image-background, 
+.jsfb-preview-file-wrapper .jsfb-preview-image .jsfb-preview-image-image {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+.jsfb-preview-file-wrapper .jsfb-preview-image .jsfb-preview-image-background {
+    background-size: cover;
+    filter: blur(6px) brightness(1.5) saturate(1.5);
+}
+
+.jsfb-preview-file-wrapper .jsfb-preview-overlay {
+    top: 0;
+    position: absolute;
+    text-align: right;
+    width: calc(100% - calc(var(--jsfb-filelist-file-padding) * 2));
+    margin-left: var(--jsfb-filelist-file-padding);
+    margin-top: var(--jsfb-filelist-file-padding);
+    pointer-events: none;
+}
+
+.jsfb-preview-file-wrapper .jsfb-preview-overlay button {
+    pointer-events: auto;
+}
