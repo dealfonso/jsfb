@@ -28,7 +28,7 @@ class JSFBDropdown {
     };
 
     static mutationObserver = new MutationObserver((mutations) => {
-        JSFBDropdown.fromDOM(document.querySelectorAll('.jsfb-dropdown'));
+        JSFBDropdown.fromDOM(document.querySelectorAll('.fb-dropdown'));
     });
 
     static fromDOM(objects, options = {}) {
@@ -70,15 +70,15 @@ class JSFBDropdown {
         this.dropdown = dropdown;
         let effectiveOptions = Object.assign({}, JSFBDropdown.defaults, this.extractOptions(), options, );
         this.options = effectiveOptions;
-        this.toggle = dropdown.querySelector('.jsfb-dropdown-toggle');
-        this.content = dropdown.querySelector('.jsfb-dropdown-content');
+        this.toggle = dropdown.querySelector('.fb-dropdown-toggle');
+        this.content = dropdown.querySelector('.fb-dropdown-content');
         this.isOpen = false;
         this.documentClickHandler = !this.options.closeOnOutsideClick?null:(event) => {
             if (!this.dropdown.contains(event.target)) {
                 this.hide();
             }
         };
-        this.optionsInMenu = dropdown.querySelectorAll('.jsfb-dropdown-content'),
+        this.optionsInMenu = dropdown.querySelectorAll('.fb-dropdown-content'),
         this.closeHandler = (event) => {
             this.hide();
             event.stopPropagation();
