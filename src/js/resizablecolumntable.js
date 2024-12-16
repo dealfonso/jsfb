@@ -33,10 +33,10 @@ class ResizableColumnTable {
         firstColumn: 0,
         lastColumn: -1,
         sortableHeaders: true,
-        classSorter: 'sorter fas jsfb-svg-icon',
-        classUnsorted: 'jsfb-svg-icon-sort fa-sort',
-        classSorterUp: 'up jsfb-svg-icon-sort-up fa-sort-up',
-        classSorterDown: 'down jsfb-svg-icon-sort-down fa-sort-down',
+        classSorter: 'sorter fas',
+        classUnsorted: 'fa-sort',
+        classSorterUp: 'up fa-sort-up',
+        classSorterDown: 'down fa-sort-down',
         onSort: (header, direction) => { }
     };
 
@@ -64,7 +64,7 @@ class ResizableColumnTable {
         for (let i = this.options.firstColumn; i < this.options.lastColumn + 1 ; i++) {
             let header = headers[i];
             let resizer = document.createElement('div');
-            resizer.classList.add('jsfb-resizer');
+            resizer.classList.add('fb-resizer');
             header.appendChild(resizer);
             this.resizers.push(resizer);
             this.addEventHandlers(header, resizer);
