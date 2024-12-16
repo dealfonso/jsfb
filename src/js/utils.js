@@ -19,6 +19,9 @@ function atob_utf8(value) {
 }
 
 function toHumanSize(size) {
+    if (size === null || size === undefined) {
+        return "";
+    }
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
     let unitIndex = 0;
     size = parseFloat(size);
@@ -31,3 +34,22 @@ function toHumanSize(size) {
     }
     return `${size.toFixed(2)} ${units[unitIndex]}`;
 };
+
+function covertCallback(callback, context = null) {
+    if (callback === null) {
+        return null;
+    }
+    if (typeof callback === 'string') {
+        callback = (_) => {
+            const file = _;
+            eval(callback);
+        }
+    }
+    if (callback instanceof Function) {
+        if (context !== null) {
+            return callback.bind(context);
+        } 
+        return callback;
+    }
+    throw new Error('Invalid callback');
+}
