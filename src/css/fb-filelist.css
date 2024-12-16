@@ -1,0 +1,66 @@
+.fb-filelist {
+    /* espacio entre ficheros */
+    --fb-gutter-x: 10px;
+    --fb-gutter-y: 10px;
+
+    /** tamaño de los iconos */
+    --fb-icon-size: 3em;
+    --fb-icon-margin-x: 0.5em;
+    --fb-icon-separation: 0.5em;
+
+    /** redondeo de los bordes */
+    --fb-border-radius: 5px;
+
+    /** borde de los ficheros */
+    --fb-border: solid 1px #ccc;
+
+    /** padding dentro de cada fichero */
+    --fb-file-padding: 0.5em;
+
+    /** padding entre el borde y el contenido */
+    --fb-padding: 0.5em;
+}
+
+/** colores para los iconos */
+.fb-file-icon .fa-file-pdf {
+    color: red;
+}
+.fb-file-icon .fa-file-word {
+    color: blue;
+}
+.fb-file-icon .fa-file-excel {
+    color: green;
+}
+.fb-file-icon .fa-file-powerpoint {
+    color: orange;
+}
+.fb-file-icon .fa-file-image {
+    color: purple;
+}
+.fb-file-icon .fa-file-archive {
+    color: brown;
+}
+.fb-file-icon .fa-file-audio {
+    color: darkgoldenrod;
+}
+.fb-file-icon .fa-file-video {
+    color: darkblue;
+}
+.fb-file-icon .fa-file-code {
+    color: blue;
+}
+.fb-file-icon .fa-file-alt {
+    color: gray;
+}
+.fb-file-icon .fa-file {
+    color: black;
+}
+.fb-file-icon .fa-folder {
+    color: #007bff;
+}
+.fb-file-icon .fa-reply {
+    color: #007bff;
+}
+.fb-hidden {
+    display: none;
+}

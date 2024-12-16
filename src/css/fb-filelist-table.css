@@ -1,11 +1,18 @@
-.jsfb-filelist-table {
-    padding: var(--jsfb-filelist-padding);
+.fb-list {
+    padding: 0;
     overflow: auto;
     width: 100%;
+    height: 100%;
 }
 
-.jsfb-filelist-table td {
-    padding: var(--jsfb-filelist-gutter-y) 1.5em;
+.fb-list table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.fb-list td {
+    padding: var(--fb-gutter-y) 1.5em;
     vertical-align: middle;
     cursor: pointer;
     overflow: hidden;
@@ -14,24 +21,22 @@
     color: #666;
     font-size: 0.875em;
 }
-.jsfb-filelist-table td.jsfb-file-size {
+
+.fb-list td.fb-file-size {
     text-align: right;
 }
-/* .jsfb-filelist-table th.jsfb-file-name {
-    padding-left: 1.5em;
-}*/
-.jsfb-filelist-table td span.jsfb-file-icon i {
+
+.fb-list td span.fb-file-icon i {
     width: 1em;
+    margin-right: 0.25em;
 } 
 
-.jsfb-filelist-header {
+.fb-list thead {
     background-color: #f8f9fa;
-}
-.jsfb-filelist-table thead {
     position: sticky;
     top: 0;
 }
-.jsfb-filelist-header th {
+.fb-list thead th {
     padding: 0.5em 1.5em;
     font-weight: normal;
     text-align: left;
@@ -42,12 +47,12 @@
 }
 
 /** sorting icons */
-.jsfb-filelist-header th i {
+.fb-list thead th i {
     margin-right: 0.5em;
     position: absolute;
     right: 0;
 }
-.jsfb-filelist-header th i.sorter {
+.fb-list thead th i.sorter {
     cursor: pointer;
     width: 1em;
     text-align: center;
@@ -55,7 +60,7 @@
     height: 1em;
 }
 /** resizer */
-.jsfb-filelist-header .jsfb-resizer {
+.fb-list thead .fb-resizer {
     position: absolute;
     top: 0;
     right: 0;
@@ -65,7 +70,7 @@
     z-index: 10;
     height: 100%;
 }
-.jsfb-filelist-header .jsfb-resizer::after {
+.fb-list thead .fb-resizer::after {
     content: '';
     position: absolute;
     top: 0;
@@ -75,26 +80,25 @@
     background-color: #eee;
 }
 
-.jsfb-filelist-table .jsfb-resizer.resizing,
-.jsfb-filelist-table .jsfb-resizer:hover {
+.fb-list .fb-resizer.resizing,
+.fb-list .fb-resizer:hover {
     cursor: col-resize;
 }
-.jsfb-filelist-table .resizing {
+.fb-list .resizing {
     pointer-events: none;
 }
 
 /** the selected row */
-.jsfb-filelist-table tr.selected {
+.fb-list tr.selected {
+    background-color: #007bff;
+    color: white;
     position: relative;
-    background-color: #eee;
-    border-color: #ddd;
+    /* background-color: #eee;
+    border-color: #ddd; */
 }
-.jsfb-filelist tr.selected::after {
-    position: absolute;
-    font: var(--fa-font-regular);
-    content: '\f14a';
-    color: #777;
-    right: 0.625em;
-    top: 0.625em;
-    margin: 0;
+.fb-list tr.selected td {
+    color: white;
+}
+.fb-list tr.selected td i {
+    color: white;
 }

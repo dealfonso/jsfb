@@ -1,0 +1,185 @@
+.fb-preview {
+    align-content: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    padding: var(--fb-padding);
+    overflow: auto;
+    height: 100%;
+}
+
+.fb-preview .fb-file-wrapper {
+    margin-left: var(--fb-gutter-x);
+    margin-top: var(--fb-gutter-y);
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+}
+
+.fb-preview .fb-file-wrapper .fb-file {
+    position: relative;
+    --fb-preview-file-height: 288px;
+    height: calc(var(--fb-preview-file-height) - var(--fb-file-padding) * 2);
+    width: calc(var(--fb-preview-file-height) - var(--fb-file-padding) * 2);
+    border: var(--fb-border);
+    border-radius: var(--fb-border-radius);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    padding: var(--fb-file-padding);
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+}
+
+.fb-preview-big .fb-preview .fb-file {
+    --fb-preview-file-height: 432px;
+}
+.fb-preview-bigger .fb-preview .fb-file {
+    --fb-preview-file-height: 576px;
+}
+
+@media screen and (min-width: 768px) {
+    .fb-preview-md-big .fb-preview .fb-file {
+        --fb-preview-file-height: 432px;
+    }
+    .fb-preview-md-bigger .fb-preview .fb-file {
+        --fb-preview-file-height: 576px;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .fb-preview-lg-big .fb-preview .fb-file {
+        --fb-preview-file-height: 432px;
+    }
+    .fb-preview-lg-bigger .fb-preview .fb-file {
+        --fb-preview-file-height: 576px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .fb-preview-xl-big .fb-preview .fb-file {
+        --fb-preview-file-height: 432px;
+    }
+    .fb-preview-xl-bigger .fb-preview .fb-file {
+        --fb-preview-file-height: 576px;
+    }
+}
+
+.fb-preview .fb-file-wrapper .fb-file-icon {
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 2em);
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fb-preview .fb-file-wrapper .fb-file-icon i {
+    font-size: calc(var(--fb-preview-file-height) / 2);
+}
+
+.fb-preview .fb-file-wrapper .fb-file-details {
+    position: absolute;
+    width: 100%;
+    height: 3em;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: rgba(200, 200, 200, 0.6);
+}
+
+.fb-preview .fb-file-wrapper .fb-file-details p {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.fb-preview .fb-file-wrapper .fb-file-name {
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 90%;
+    white-space: nowrap;
+}          
+
+.fb-preview .fb-file-wrapper .fb-file-size {
+    display: none;
+    font-size: 0.8em;
+    color: #666;
+}
+
+.fb-preview .fb-file-wrapper .fb-file-modified {
+    display: none;
+    font-size: 0.8em;
+    color: #666;
+}
+
+.fb-preview .fb-file-wrapper.selected .fb-file {
+    background-color: #007bff;
+    color: white;
+    position: relative
+}
+
+.fb-preview .fb-file-wrapper.selected .fb-file-details {
+    background: rgba(0, 128, 255, 0.6);
+}
+
+.fb-preview .fb-file-wrapper.selected .fb-file-icon i {
+    color: white;
+}
+.fb-preview .fb-file-wrapper.selected .fb-preview-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #007bff;
+    opacity: 0.7;
+    color: white;
+}
+
+.fb-preview .fb-file-wrapper .fb-preview-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+} 
+
+.fb-preview .fb-file-wrapper .fb-preview-image .fb-preview-image-background, 
+.fb-preview .fb-file-wrapper .fb-preview-image .fb-preview-image-image {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+.fb-preview .fb-file-wrapper .fb-preview-image .fb-preview-image-background {
+    background-size: cover;
+    filter: blur(6px) brightness(1.5) saturate(1.5);
+}
+
+.fb-preview .fb-file-wrapper .fb-preview-overlay {
+    top: 0;
+    position: absolute;
+    text-align: right;
+    width: calc(100% - calc(var(--fb-file-padding) * 2));
+    margin-left: var(--fb-file-padding);
+    margin-top: var(--fb-file-padding);
+    pointer-events: none;
+}
+
+.fb-preview .fb-file-wrapper .fb-preview-overlay button {
+    pointer-events: auto;
+}
