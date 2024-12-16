@@ -1,22 +1,64 @@
+if (typeof exports === 'undefined') {
+    exports = window;
+}
+
 class FileInFileBrowser {
     static defaultOptions = {
-        icon: "jsfb-svg-icon jsfb-svg-icon-file fa fa-file",
+        // The size of the file
+        size: 0,
+        // The date when the file was modified (it can be a Date object, a string or a number); null means that the file
+        //  modification date is unknown
+        modified: null,
+        // The class to be used for the icon (into the i tag)
+        icon: "fa fa-file",
+        // The type of the file (file, image, video, audio, etc.)
         type: 'file',
-        contextMenu: null,
+        // If the file is a directory (it will be rendered as a folder)
         isDirectory: false,
-        onClick: null,
-        onDoubleClick: null,
+        // In case that the file has to be shown first (for example, the '..' file). In this case, there will be no
+        //  order in the files, the first file will be shown first.
+        showFirst: false,
+        // The function to be called when the file is clicked
+        onFileClick: null,
+        // The function to be called when the file is double clicked
+        onFileDoubleClick: null,
+        // The URL to be used as a preview (in the preview mode, if the file is not a folder)
         previewUrl: null,
+        // A user defined data to be stored in the file
+        data: null,
+        // The context menu options is an object with the options to be shown in the context menu. This is an object
+        //  where the key is the action to be performed and the value is either an object with the options for the item
+        //  or a function to be called when the item is clicked.
+        //
+        //  The options are:
+        //  - label: the label to be shown in the context menu (if not provided, the key will be used)
+        //  - icon: the icon to be shown in the context menu (if not provided, no icon will be shown)
+        //  - handler: the function to be called when the item is clicked 
+        //
+        //  If the value is a function, it will be considered as the handler, the label will be the key and no icon
+        //  will be shown.
+        //
+        //  If the key starts with '__', it will be ignored.
+        contextMenu: null,
     };
 
-    constructor(filename, size, modified, options = {}) {
-        this.options = Object.assign({}, FileInFileBrowser.defaultOptions, options);
-        this.filename = filename;
-        this.size = size;
-        this.type = this.options.type??'file';
-        this.isDirectory = this.options.isDirectory??false;
+    constructor(filename, options = {}) {
+        options = Object.assign({}, FileInFileBrowser.defaultOptions, options);
+        this.update(options);
 
-        this.modified = null;
+        // The name of the file
+        this.filename = filename;
+        this.selected = false;
+
+        // The HTML element to be used to show the file
+        this._htmlElement = null;
+    }
+
+    _setModified(modified) {
+        if (modified === null) {
+            this.modified = null;
+            return;
+        }
         if ((typeof modified === 'string') || (modified instanceof String)) {
             // Check if the string is a number
             if (!isNaN(modified)) {
@@ -38,9 +80,23 @@ class FileInFileBrowser {
         if (modified instanceof Date) {
             this.modified = modified;
         } 
+    }
 
-        this._htmlElement = null;
-        this.selected = false;
+    update(options = {}) {
+        let optionNames = Object.keys(FileInFileBrowser.defaultOptions);
+        for (let option of optionNames) {
+            if (options[option] !== undefined) {
+                switch (option) {
+                    case 'modified':
+                        this._setModified(options[option]);
+                        break;
+                    default:
+                        this[option] = options[option];
+                        break;
+                }
+            }
+        }
+        this.isDirectory = options.isDirectory??false;
     }
     select() {
         this.selected = true;
@@ -72,19 +128,19 @@ class FileInFileBrowser {
         }
     }
     createContextMenu() {
-        if (this.options.contextMenu === null) {
+        if (this.contextMenu === null) {
             return null;
         }
         let contextMenu = document.createElement('div');
-        contextMenu.classList.add('jsfb-dropdown', 'jsfb-dropdown-s', 'jsfb-file-context-menu');
+        contextMenu.classList.add('fb-dropdown', 'fb-dropdown-s', 'fb-file-context-menu');
         contextMenu.innerHTML = `
-            <button class="jsfb-dropdown-toggle no-chevron" type="button">
-                <i class="jsfb-svg-icon jsfb-svg-icon-ellipsis-v fa fa-ellipsis-v"></i>
+            <button class="fb-dropdown-toggle" type="button">
+                <i class="fa fa-ellipsis-v"></i>
             </button>`;
         let dropdownContent = document.createElement('ul');
-        dropdownContent.classList.add('jsfb-dropdown-content');
+        dropdownContent.classList.add('fb-dropdown-content');
 
-        let contextMenuOptions = this.options.contextMenu;
+        let contextMenuOptions = this.contextMenu;
 
         if (contextMenuOptions instanceof Array) {
             contextMenuOptions = contextMenuOptions.reduce((acc, item) => {
@@ -129,27 +185,27 @@ class FileInFileBrowser {
 
         let row = document.createElement('tr');
         row.innerHTML = `
-            <td class="jsfb-file-name"><span class="jsfb-file-icon"><i class="${this.options.icon}"></i></span> ${this.filename}</td>
-            <td class="jsfb-file-size">${toHumanSize(this.size)}</td>
-            <td class="jsfb-file-modified">${this.modified?.toLocaleString()}</td>
+            <td class="fb-file-name"><span class="fb-file-icon"><i class="${this.icon}"></i></span> ${this.filename}</td>
+            <td class="fb-file-size">${toHumanSize(this.size)}</td>
+            <td class="fb-file-modified">${this._modifiedStr()}</td>
         `;
 
         row.dataset.filename = btoa_utf8(this.filename);
         row.dataset.size = this.size;
         row.dataset.modified = this.modified?.getTime();
-        row.dataset.type = this.options.type;
+        row.dataset.type = this.type;
 
         if (this.selected) {
             row.classList.add('selected');
         }
         row.addEventListener('click', () => {
-            if (this.options.onClick instanceof Function) {
-                this.options.onClick(this);
+            if (this.onFileClick instanceof Function) {
+                this.onFileClick(this);
             }
         });
         row.addEventListener('dblclick', () => {
-            if (this.options.onDoubleClick instanceof Function) {
-                this.options.onDoubleClick(this);
+            if (this.onFileDoubleClick instanceof Function) {
+                this.onFileDoubleClick(this);
             }
         });
         if (this.selected) {
@@ -172,36 +228,36 @@ class FileInFileBrowser {
         let contextMenu = this.createContextMenu();
 
         let element = document.createElement('div');
-        element.classList.add('jsfb-preview-file-wrapper');
+        element.classList.add('fb-file-wrapper');
         element.innerHTML = `
-            <div class="jsfb-preview-file">
+            <div class="fb-file">
             </div>
         `;
-        let previewElement = element.querySelector('.jsfb-preview-file');
-        if (this.options.previewUrl !== null) {
+        let previewElement = element.querySelector('.fb-file');
+        if (this.previewUrl !== null) {
             previewElement.innerHTML = `
-                <div class="jsfb-preview-image">
-                    <div class="jsfb-preview-image-background" style="background-image: url('${this.options.previewUrl}')"></div>
-                    <div class="jsfb-preview-image-image" style="background-image: url('${this.options.previewUrl}')"></div>
+                <div class="fb-preview-image">
+                    <div class="fb-preview-image-background" style="background-image: url('${this.previewUrl}')"></div>
+                    <div class="fb-preview-image-image" style="background-image: url('${this.previewUrl}')"></div>
                 </div>
             `;
         } else {
             previewElement.innerHTML = `
-                <div class="jsfb-file-icon">
-                    <i class="${this.options.icon}"></i>
+                <div class="fb-file-icon">
+                    <i class="${this.icon}"></i>
                 </div>`;
         }
         previewElement.innerHTML += `
-                <div class="jsfb-file-details">
-                    <p class="jsfb-file-name">${this.filename}</p>
-                    <p class="jsfb-file-size">${toHumanSize(this.size)}</p>
-                    <p class="jsfb-file-modified">${this.modified?.toLocaleString()}</p>
+                <div class="fb-file-details">
+                    <p class="fb-file-name">${this.filename}</p>
+                    <p class="fb-file-size">${toHumanSize(this.size)}</p>
+                    <p class="fb-file-modified">${this._modifiedStr()}</p>
                 </div>
         `;
 
         if ((overlay !== null) || (contextMenu !== null)) {
             let overlayElement = document.createElement('div');
-            overlayElement.classList.add('jsfb-preview-overlay');
+            overlayElement.classList.add('fb-preview-overlay');
             if (overlay !== null) {
                 overlayElement.appendChild(overlay);
             }
@@ -214,27 +270,30 @@ class FileInFileBrowser {
         element.dataset.filename = btoa_utf8(this.filename);
         element.dataset.size = this.size;
         element.dataset.modified = this.modified?.getTime();
-        element.dataset.type = this.options.type;
+        element.dataset.type = this.type;
 
         if (this.selected) {
             element.classList.add('selected');
         }
         this._htmlElement = element;
-        // element = element.querySelector('.jsfb-preview-file');
+        // element = element.querySelector('.fb-file');
         element.addEventListener('click', () => {
-            if (this.options.onClick instanceof Function) {
-                this.options.onClick(this);
+            if (this.onFileClick instanceof Function) {
+                this.onFileClick(this);
             }
         });
         element.addEventListener('dblclick', () => {
-            if (this.options.onDoubleClick instanceof Function) {
-                this.options.onDoubleClick(this);
+            if (this.onFileDoubleClick instanceof Function) {
+                this.onFileDoubleClick(this);
             }
         }
         );
         return this._htmlElement;
     }
 
+    _modifiedStr() {
+        return ((this.modified===null)||(this.modified===undefined))?'':this.modified.toLocaleString();
+    }
 
     gridElement(overlayGenerator = null) {
         if (this._htmlElement !== null) {
@@ -249,23 +308,23 @@ class FileInFileBrowser {
         let contextMenu = this.createContextMenu();     
 
         let element = document.createElement('div');
-        element.classList.add('jsfb-file-wrapper');
+        element.classList.add('fb-file-wrapper');
         element.innerHTML = `
-            <div class="jsfb-file">
-                <div class="jsfb-file-icon">
-                    <i class="${this.options.icon}"></i>
+            <div class="fb-file">
+                <div class="fb-file-icon">
+                    <i class="${this.icon}"></i>
                 </div>
-                <div class="jsfb-file-details" title="${this.filename}">
-                    <p class="jsfb-file-name">${this.filename}</p>
-                    <p class="jsfb-file-size">${toHumanSize(this.size)}</p>
-                    <p class="jsfb-file-modified">${this.modified?.toLocaleString()}</p>
+                <div class="fb-file-details" title="${this.filename}">
+                    <p class="fb-file-name">${this.filename}</p>
+                    <p class="fb-file-size">${toHumanSize(this.size)}</p>
+                    <p class="fb-file-modified">${this._modifiedStr()}</p>
                 </div>
             </div>
         `;
 
         if ((overlay !== null) || (contextMenu !== null)) {
             let overlayElement = document.createElement('div');
-            overlayElement.classList.add('jsfb-file-overlay');
+            overlayElement.classList.add('fb-file-overlay');
             if (overlay !== null) {
                 overlayElement.appendChild(overlay);
             }
@@ -278,29 +337,25 @@ class FileInFileBrowser {
         element.dataset.filename = btoa_utf8(this.filename);
         element.dataset.size = this.size;
         element.dataset.modified = this.modified?.getTime();
-        element.dataset.type = this.options.type;
+        element.dataset.type = this.type;
 
         if (this.selected) {
             element.classList.add('selected');
         }
         this._htmlElement = element;
-        element = element.querySelector('.jsfb-file');
+        // element = element.querySelector('.fb-file');
         element.addEventListener('click', () => {
-            if (this.options.onClick instanceof Function) {
-                this.options.onClick(this);
+            if (this.onFileClick instanceof Function) {
+                this.onFileClick(this);
             }
         });
         element.addEventListener('dblclick', () => {
-            if (this.options.onDoubleClick instanceof Function) {
-                this.options.onDoubleClick(this);
+            if (this.onFileDoubleClick instanceof Function) {
+                this.onFileDoubleClick(this);
             }
         });
         return this._htmlElement;
     }
-    clickHandler(handler) {
-        this._clickHandler = handler;
-    }
-    dblclickHandler(handler) {
-        this._dblclickHandler = handler;
-    }
 }
+
+exports.FileInFileBrowser = FileInFileBrowser;

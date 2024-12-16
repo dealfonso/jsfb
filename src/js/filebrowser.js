@@ -1,5 +1,5 @@
 if (typeof exports === 'undefined') {
-    exports = {}
+    exports = window;
 }
 
 class FileBrowser {
@@ -41,6 +41,8 @@ class FileBrowser {
         'xml': 'fas fa-file-code',
         'csv': 'fas fa-file-excel',
         'file': 'fas fa-file',
+        'html': 'fas fa-file-code',
+        'md': 'fas fa-file-alt',
     };    
     static defaultOptions = {
         // The mode of the file browser ("list" or "grid")
@@ -58,7 +60,7 @@ class FileBrowser {
         // Called when a file is clicked (file) => { }
         onFileClick: (file) => { },
         // Called when a file is double clicked (file) => {
-        onFileDblClick:  (file) => { },
+        onFileDoubleClick:  (file) => { },
         // Called to generate a "toolbar" for the file (the original purpose is to generate a context menu for the file)
         overlayGenerator: (file) => null,
         // Called when a file is created (element, file, mode) => { }, where <element> is the HTML element created, <file>
@@ -82,11 +84,19 @@ class FileBrowser {
         //   dot), and the value being a css string to be used as the class of the icon for the file. 
         //   If the extension is not found, the default icon will be used (the "" extension).
         extensionToIcon: FileBrowser.extensionToIcon,
-        // The definition of a custom context menu for the file. It may consist of a dictionary with the keys being the 
-        //  name of the option and the value being 
-        //      a) an object with the keys "label", "icon" and "handler" (the function to be called)
-        //      b) a function to be called
-        //  If the label is omitted, the key will be used as the label. If the icon is omitted, no icon will be shown.
+        // The context menu options is an object with the options to be shown in the context menu. This is an object
+        //  where the key is the action to be performed and the value is either an object with the options for the item
+        //  or a function to be called when the item is clicked.
+        //
+        //  The options are:
+        //  - label: the label to be shown in the context menu (if not provided, the key will be used)
+        //  - icon: the icon to be shown in the context menu (if not provided, no icon will be shown)
+        //  - handler: the function to be called when the item is clicked 
+        //
+        //  If the value is a function, it will be considered as the handler, the label will be the key and no icon
+        //  will be shown.
+        //
+        //  If the key starts with '__', it will be ignored.
         //
         // (*) If a context menu is passed, the options onFileDownload, onFileDelete, onFileRename, onFileCopy, onFileMove,
         //     onFileShare and onFileInfo will be ignored.
@@ -94,6 +104,389 @@ class FileBrowser {
         //     (onFileDownload, onFileDelete, onFileRename, onFileCopy, onFileMove, onFileShare, onFileInfo).
         customContextMenu: null,
     }
+
+    /**
+     * Creates a FileBrowser in the given element with the given options
+     * @param {HTMLElement | string} element - the element to create the FileBrowser in (or the selector of the element)
+     * @param {Object} options - the options to be used in the FileBrowser (see FileBrowser.defaultOptions)
+     * @returns a FileBrowser object (or the existing FileBrowser if the element already has one)
+     */
+    constructor(element, options = {}) {
+        if (element instanceof Element) {
+        } else if (typeof element === 'string') {
+            element = document.querySelector(element);
+        } else {
+            throw new Error('Invalid element');
+        }
+
+        // If the element already has a FileBrowser, we'll update the options and return the existing FileBrowser
+        if (element._jsfbFileBrowser !== undefined) {
+            element._jsfbFileBrowser.updateOptions(options);
+            return element._jsfbFileBrowser;
+        }
+
+        // We'll get the options from the DOM
+        let optionsFromDOM = this._optionsFromDOM(element);
+
+        // We'll merge the options from the DOM with the options passed to the constructor (giving priority to the options here)
+        this.options = Object.assign({}, FileBrowser.defaultOptions, optionsFromDOM, options);
+
+        // Finally we'll initialize the FileBrowser
+        this.orderColumn = null;
+        this.orderAscending = null;
+        this.mode = null;
+        this.filelist = [];
+        this._elementsPlace = null;
+        this._htmlElement = element;
+
+        // And we'll evaluate the options
+        this._evaluateOptions();
+
+        // We'll set the FileBrowser in the element (so that we can recover it later)
+        element._jsfbFileBrowser = this;
+    }
+
+    /**
+     * Updates the options of the FileBrowser
+     * @param {Object} options - the options to be updated (see FileBrowser.defaultOptions)
+     * @param {boolean} fromClear - whether the options are being updated keeping the previous options (false) or if
+     *                              the options are being updated from a clear state (true)
+     */
+    updateOptions(options, fromClear = false) {
+        if (fromClear) {
+            this.options = Object.assign({}, FileBrowser.defaultOptions, options);
+        } else {
+            this.options = Object.assign({}, this.options, options);
+        }
+        this._evaluateOptions();
+        // We'll re-render the FileBrowser, as the options have changed and the file order might have changed because
+        //  of the orderColumn and orderAscending
+        this.render();
+    }
+
+    /**
+     * Sets the mode of the FileBrowser
+     * @param {string} mode - the mode to be set ("list", "grid" or "preview")
+     * @throws {Error} if the mode is invalid
+     */
+    setMode(mode) {
+        switch (mode.toLowerCase()) {
+            case 'list':
+            case 'grid':
+            case 'preview':
+                this.mode = mode;
+                break;
+            default:
+                throw new Error('Invalid mode');
+        }
+    }
+
+    _addFile(filename, options = {}) {
+        if (!this.options.allowDuplicates) {
+            // If we don't allow duplicates, we'll check if the file already exists}
+            let existing = this.filelist.find((file) => file.filename === filename);
+            if (existing !== undefined) {
+                throw new Error('File already exists');
+            }
+        }
+
+        filename = `${filename}`;
+        options = Object.assign({}, {
+            contextMenu: this.options.customContextMenu,
+            icon: options.isDirectory?"fa-regular fa-folder": this._filenameToIcon(filename),
+            type: filename.split('.').pop().toLowerCase(),
+            onFileClick: this.options.onFileClick,
+            onFileDoubleClick: this.options.onFileDoubleClick,
+        }, options);
+
+        let file = new FileInFileBrowser(filename, options);
+        let nextFile = this._findNextFile(file);
+        if (nextFile !== null) {
+            this.filelist.splice(this.filelist.indexOf(nextFile), 0, file);
+            this._renderFile(file, nextFile);
+        } else {
+            // If there is no next file, we add it at the end
+            this.filelist.push(file);
+            this._renderFile(file);
+        }
+        return file;
+    }
+
+    /**
+     * Adds a file to the FileBrowser
+     * @param {string} filename - the name of the file
+     * @param {number} size - the size of the file
+     * @param {Date} modified - the date the file was modified
+     * @param {Object} options - the options for the file (see FileInFileBrowser.defaultOptions)
+     * @returns the FileInFileBrowser object created
+     * @throws {Error} if the file already exists and duplicates are not allowed
+     */
+    addFile(filename, size, modified, options = {}) {
+        return this._addFile(filename, Object.assign({}, options, {
+            isDirectory: false,
+            size: size,
+            modified: modified,
+        }));
+    }
+
+    /**
+     * Adds or updates a file in the FileBrowser. If the file already exists, it will be updated with the new options
+     * @param {string} filename - the name of the file
+     * @param {Object} options - the options for the file (see FileInFileBrowser.defaultOptions)
+     * @returns the FileInFileBrowser object created or updated
+     */
+    addOrUpdateFile(filename, options = {}) {
+        let existing = this.findFile(filename);
+        options = Object.assign({}, options, {
+            isDirectory: false,
+            type: filename.split('.').pop().toLowerCase(),
+        });
+        if (existing === null) {
+            return this.addFile(filename, 0, new Date(), options);
+        }
+        if (existing.isDirectory) {
+            throw new Error('Existing file is not a file');
+        }
+        existing.update(options);
+        this.render();
+        return existing;
+    }
+
+    /**
+     * Updates a file in the FileBrowser. If the file does not exist, an error will be thrown. Size and modified date
+     *   may be updated using the options { size: <size>, modified: <modified> }
+     * @param {string} filename - the name of the file
+     * @param {Object} options - the options for the file (see FileInFileBrowser.defaultOptions)
+     * @returns the FileInFileBrowser object updated
+     * @throws {Error} if the file does not exist
+     */
+    updateFile(filename, options = {}) {
+        let existing = this.findFile(filename);
+        if (existing === null) {
+            throw new Error('File not found');
+        }
+        return this.addOrUpdateFile(filename, options);
+    }
+
+    /**
+     * Adds a folder to the FileBrowser
+     * @param {string} name - the name of the folder
+     * @param {Date} modified - the date the folder was modified
+     * @param {Object} options - the options for the folder (see FileInFileBrowser.defaultOptions)
+     * @returns the FileInFileBrowser object created
+     * @throws {Error} if the folder already exists and duplicates are not allowed
+     */
+    addFolder(name, modified, options = {}) {
+        return this._addFile(name, Object.assign({}, {
+                // Allow to override the icon using the options
+                icon: "fa-regular fa-folder",
+                // Also allow to override the size (which will be null for folders unless specified)
+                size: null,
+            }, options, {
+                isDirectory: true,
+                modified: modified,
+            }
+        ));
+    }
+
+    /**
+     * Updates a folder in the FileBrowser. If the folder does not exist, an error will be thrown.
+     * @param {string} name - the name of the folder
+     * @param {Object} options - the options for the folder (see FileInFileBrowser.defaultOptions)
+     * @returns the FileInFileBrowser object updated
+     * @throws {Error} if the folder does not exist
+     */
+    updateFolder(name, options = {}) {
+        let existing = this.findFile(name);
+        if (existing === null) {
+            throw new Error('Folder not found');
+        }
+        return this.addOrUpdateFolder(name, options);
+    }
+
+    /**
+     * Adds or updates a folder in the FileBrowser. If the folder already exists, it will be updated with the new options
+     * @param {string} name - the name of the folder
+     * @param {Object} options - the options for the folder (see FileInFileBrowser.defaultOptions)
+     * @returns the FileInFileBrowser object created or updated
+     */
+    addOrUpdateFolder(name, options = {}) {
+        options = Object.assign({}, options, {
+            isDirectory: true,
+            type: 'folder',
+        });
+
+        let existing = this.findFile(name);
+        if (existing === null) {
+            return this.addFolder(name, new Date(), options);
+        }
+        if (!existing.isDirectory) {
+            throw new Error('Existing file is not a folder');
+        }
+
+        existing.update(options);
+
+        this.render();
+        return existing;
+    }
+
+    /**
+     * Finds a file in the FileBrowser by its name (if there are multiple files with the same name, the first one 
+     *  will be returned)
+     * @param {string} filename - the name of the file to be found
+     * @returns the FileInFileBrowser object found or null if the file was not found 
+     */
+    findFile(filename) {
+        let existing = this.filelist.find((file) => file.filename === filename);
+        if (existing === undefined) {
+            return null;
+        }
+        return existing;
+    }
+
+    /**
+     * Finds all files in the FileBrowser by their name (if there are multiple files with the same name, all of them
+     *  will be returned)
+     * @param {string} filename - the name of the file to be found
+     * @returns an array with all the FileInFileBrowser objects found (or an empty array if no file was found)
+     */
+    findFiles(filename) {
+        return this.filelist.filter((file) => file.filename === filename);
+    }
+
+    /**
+     * Removes a file from the FileBrowser (either by its name or by the FileInFileBrowser object). If there are multiple
+     *  files with the same name, all of them will be removed.
+     * @param {string | FileInFileBrowser} file - the name of the file to be removed or the FileInFileBrowser object
+     */
+    removeFile(file) {
+        if (file instanceof FileInFileBrowser) {
+            let index = this.filelist.indexOf(file);
+            if (index >= 0) {
+                this.filelist.splice(index, 1);
+            }
+        } else if (typeof file === 'string') {
+            let files = this.getFiles(file);
+            if (files.length === 0) {
+                return;
+            }
+            files.forEach((file) => {
+                let index = this.filelist.indexOf(file);
+                if (index >= 0) {
+                    this.filelist.splice(index, 1);
+                }
+            });
+        }
+        this.render();
+    }
+
+    /**
+     * Executes a callback for each file in the FileBrowser
+     * @param {Function} callback - the callback to be executed for each file (file) => { }
+     */
+    forEachFile(callback) {
+        this.filelist.forEach(callback);
+        this.render();
+    }
+
+    /**
+     * Renders the FileBrowser
+     * @param {string} mode - the mode to be rendered ("list", "grid" or "preview"). If null, the current mode will be used
+     * @throws {Error} if the mode is invalid
+     */
+    render(mode = null) {
+        if (mode !== null) {
+            this.setMode(mode);
+        }
+        this._htmlElement.innerHTML = '';
+        let element = null;
+        switch (this.mode) {
+            case 'list':
+                element = this._createList();
+                break;
+            case 'grid':
+                element = this._createGrid();
+                break;
+            case 'preview':
+                element = this._createPreview();
+                break;
+        }
+        this._renderFiles();
+        this._htmlElement.appendChild(element);
+        if (this.mode === 'list') {
+            new ResizableColumnTable(element, {
+                sortableHeaders: true,
+                onSort: (column, ascending) => {
+                    switch (column.textContent.trim().toLowerCase()) {
+                        case 'name':
+                            this.sort('filename', ascending == 'asc');
+                            break;
+                        case 'size':
+                            this.sort('size', ascending == 'asc');
+                            break;
+                        case 'modified':
+                            this.sort('modified', ascending == 'asc');
+                            break;
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Sorts the files in the FileBrowser by the given column and order (ascending or descending)
+     * @param {string} column - the column to be sorted by ("filename", "size", "modified", "type")
+     * @param {boolean} ascending - the order of the sorting (true = ascending, false = descending)
+     * @throws {Error} if the column is invalid
+     */
+    sort(column, ascending) {
+        let sortFunction = this._getSortFunction(column, ascending);
+        this.orderColumn = column;
+        this.orderAscending = ascending;
+        this.filelist.sort(sortFunction);
+        this._elementsPlace.innerHTML = '';
+        this._renderFiles();
+    }
+
+    /**
+     * Clears the FileBrowser (removes all files)
+     */
+    clear() {
+        this.filelist = [];
+        this.render();
+    }
+
+    /**
+     * Extracts the options from the DOM element using the data attributes data-<prefix>-<key> where <prefix> is the
+     *  prefix passed as parameter and <key> is the key of the option
+     * @param {HTMLElement} element - the element to extract the options from
+     * @param {string} prefix - the prefix to be used in the data attributes
+     * @returns an object with the options extracted from the DOM element
+     */
+    _optionsFromDOM(element, prefix = 'jsfb') {
+        let options = {};
+        for (let key in FileBrowser.defaultOptions) {
+            let dataKey = prefix + key[0].toUpperCase() + key.slice(1);
+            if (element.dataset[dataKey] !== undefined) {
+                let value = element.dataset[dataKey];
+
+                // We'll try to convert the value to the correct type
+                if (value === 'true' || value === 'false') {
+                    options[key] = value === 'true';
+                } else if (!isNaN(parseFloat(value))) {
+                    options[key] = parseFloat(value);
+                } else {
+                    options[key] = value;
+                }
+            }
+        }
+        return options;
+    }
+
+    /**
+     * Generates a default context menu based on the options passed to the constructor
+     * @returns an object with the context menu options
+     */
     _generateContextMenu() {
         let contextMenu = {};
         if (this.options.onFileDownload instanceof Function) {
@@ -151,41 +544,6 @@ class FileBrowser {
         }
         return null;
     }
-    constructor(element, options = {}) {
-        this.options = Object.assign({}, FileBrowser.defaultOptions, options);
-        this.filelist = [];
-        this.element = element;
-        this.filelistElement = element.querySelector('.jsfb-filelist');
-        this._elementsPlace = null;
-
-        this._evaluateOptions();
-    }
-
-    _covertCallback(callback) {
-        if (callback === null) {
-            return null;
-        }
-        if (callback instanceof Function) {
-            return callback.bind(this);
-        }
-        if (typeof callback === 'string') {
-            return (_) => {
-                const file = _;
-                eval(callback);
-            }
-        }
-        throw new Error('Invalid callback');
-    }
-
-    updateOptions(options, fromClear = false) {
-        if (fromClear) {
-            this.options = Object.assign({}, FileBrowser.defaultOptions, options);
-        } else {
-            this.options = Object.assign({}, this.options, options);
-        }
-        this._evaluateOptions();
-        this.render();
-    }
 
     _evaluateOptions() {
         // Order of the columns
@@ -197,9 +555,9 @@ class FileBrowser {
 
         this.options.onFileHtmlElementCreated = this.options.onFileHtmlElementCreated?.bind(this);
 
-        let callbacks = ['onFileClick', 'onFileDblClick', 'onFileDownload', 'onFileDelete', 'onFileRename', 'onFileCopy', 'onFileMove', 'onFileShare', 'onFileInfo'];
+        let callbacks = ['onFileClick', 'onFileDoubleClick', 'onFileDownload', 'onFileDelete', 'onFileRename', 'onFileCopy', 'onFileMove', 'onFileShare', 'onFileInfo'];
         callbacks.forEach((callback) => {
-            this.options[callback] = this._covertCallback(this.options[callback]);
+            this.options[callback] = covertCallback(this.options[callback], this);
         });
 
         // It is possible to pass a context menu as an array of options, but if not, we generate a default one
@@ -218,18 +576,6 @@ class FileBrowser {
         }
     }
 
-    setMode(mode) {
-        switch (mode.toLowerCase()) {
-            case 'list':
-            case 'grid':
-            case 'preview':
-                this.mode = mode;
-                break;
-            default:
-                throw new Error('Invalid mode');
-        }
-    }
-
     _renderFile(file, nextFile = null) {
         let element = null;
         switch (this.mode) {
@@ -243,8 +589,9 @@ class FileBrowser {
                 element = file.previewElement(this.options.overlayGenerator);
                 break;
         }
+
         if (this.options.hideZeroSize && (file.size === 0)) {
-            element.querySelector('.jsfb-file-size').innerHTML = '';
+            element.querySelector('.fb-file-size').innerHTML = '';
         }
         this.options.onFileHtmlElementCreated?.call(this, element, file, this.mode);
         if (nextFile !== null) {
@@ -254,6 +601,50 @@ class FileBrowser {
         }
     }
 
+    /**
+     * Returns a comparison function to be used in the sort function to check the appropriate order of the files, taking
+     *   into account the separation of folders from files and the showFirst option
+     */
+    _getDirectoryAndShowFirstComparisonFunctions() {
+        if (this.options.separateFoldersFromFiles) {
+            return function (a,b) {
+                if (a.isDirectory && !b.isDirectory) {
+                    return -1;
+                }
+                if (!a.isDirectory && b.isDirectory) {
+                    return 1;
+                }
+                if (a.showFirst && !b.showFirst) {
+                    return -1;
+                }
+                if (!a.showFirst && b.showFirst) {
+                    return 1;
+                }
+                return 0;
+            }
+        } else {
+            return function (a,b) {
+                if (a.showFirst && !b.showFirst) {
+                    return -1;
+                }
+                if (!a.showFirst && b.showFirst) {
+                    return 1;
+                }
+                return 0;
+            }
+        }
+    }
+
+    /**
+     * Returns a sort function to be used to sort the files in the FileBrowser
+     * @param {string} column - the column to be sorted by ("filename", "size", "modified", "type")
+     * @param {boolean} ascending - the order of the sorting (true = ascending, false = descending)
+     * 
+     * If the column or the ascending is null, the current orderColumn and orderAscending will be used
+     * 
+     * @returns a sort function to be used in the sort method of the filelist
+     * @throws {Error} if the column is invalid
+     */
     _getSortFunction(column = null, ascending = null) {
         if (column === null) {
             column = this.orderColumn;
@@ -262,127 +653,50 @@ class FileBrowser {
             ascending = this.orderAscending;
         }
         let sortFunction = null;
+        let checkDirectoryAndShowFirst = this._getDirectoryAndShowFirstComparisonFunctions();
         switch (column) {
             case 'filename':
-                if (ascending) {
-                    sortFunction = (a, b) => {
-                        let result = a.filename.localeCompare(b.filename);
-                        if (result === 0) {
-                            return a.size - b.size;
-                        }
-                        return result;
-                    };
-                } else {
-                    sortFunction = (a, b) => {
-                        let result = b.filename.localeCompare(a.filename);
-                        if (result === 0) {
-                            return b.size - a.size;
-                        }
-                        return result;
-                    };
-                }
+                sortFunction = (a, b) => a.filename.localeCompare(b.filename);
                 break;
             case 'size':
-                if (ascending) {
-                    sortFunction = (a, b) => {
-                        let result = a.size - b.size;
-                        if (result === 0) {
-                            return a.filename.localeCompare(b.filename);
-                        }
-                        return result;
-                    }
-                } else {
-                    sortFunction = (a, b) => {
-                        let result = b.size - a.size;
-                        if (result === 0) {
-                            return b.filename.localeCompare(a.filename);
-                        }
-                        return result;
-                    }
-                }
+                sortFunction = (a, b) => a.size - b.size;
                 break;
             case 'modified':
-                if (ascending) {
-                    sortFunction = (a, b) => {
-                        if (a.modified === null) {
-                            return -1;
-                        }
-                        if (b.modified === null) {
-                            return 1;
-                        }
-                        return a.modified.getTime() - b.modified.getTime();
+                sortFunction = (a, b) => {
+                    if (a.modified === null) {
+                        return -1;
                     }
-                } else {
-                    sortFunction = (a, b) => {
-                        if (a.modified === null) {
-                            return 1;
-                        }
-                        if (b.modified === null) {
-                            return -1;
-                        }
-                        return b.modified.getTime() - a.modified.getTime();
+                    if (b.modified === null) {
+                        return 1;
                     }
+                    return a.modified.getTime() - b.modified.getTime();
                 }
                 break;
             case 'type':
-                if (ascending) {
-                    sortFunction = (a, b) => {
-                        let result = a.type.localeCompare(b.type);
-                        if (result === 0) {
-                            return a.filename.localeCompare(b.filename);
-                        }
-                        return result;
-                    }
-                } else {
-                    sortFunction = (a, b) => {
-                        let result = b.type.localeCompare(a.type);
-                        if (result === 0) {
-                            return b.filename.localeCompare(a.filename);
-                        }
-                        return result;
-                    }
-                }
+                sortFunction = (a, b) => a.type.localeCompare(b.type);
                 break;
             default:
                 throw new Error('Invalid column');
-
         }
-        return sortFunction;
+        let multiplyer = ascending?1:-1;
+        return (a, b) => {
+            let result = checkDirectoryAndShowFirst(a,b);
+            if (result !== 0) {
+                return result;
+            }
+            return multiplyer * sortFunction(a,b);
+        }
     }
 
+    /**
+     * Finds the next file of the given file in the filelist, so that the given file can be inserted before it
+     * @param {FileInFileBrowser} file - the file to be inserted
+     * @returns the next file in the filelist or null if the file is the last one
+     */
     _findNextFile(file) {
         let sortFunction = this._getSortFunction();
         if (this.filelist.length == 0) {
             return null;
-        }
-        if (this.options.separateFoldersFromFiles) {
-            if (file.isDirectory) {
-                // If the file is a directory, we'll compare to the other directories
-                for (let i = 0; i < this.filelist.length; i++) {
-                    if (this.filelist[i].isDirectory) {
-                        if (sortFunction(file, this.filelist[i]) < 0) {
-                            return this.filelist[i];
-                        }
-                    }
-                }
-                // If we didn't find a directory, we'll return the first file
-                for (let i = 0; i < this.filelist.length; i++) {
-                    if (!this.filelist[i].isDirectory) {
-                        return this.filelist[i];
-                    }
-                }
-                return null;
-            } else {
-                // If the file is a file, we'll compare to the other files
-                for (let i = 0; i < this.filelist.length; i++) {
-                    if (!this.filelist[i].isDirectory) {
-                        if (sortFunction(file, this.filelist[i]) < 0) {
-                            return this.filelist[i];
-                        }
-                    }
-                }
-                return null;
-            }
         }
         for (let i = 0; i < this.filelist.length; i++) {
             if (sortFunction(file, this.filelist[i]) < 0) {
@@ -400,140 +714,46 @@ class FileBrowser {
         if (extension in this.options.extensionToIcon) {
             return this.options.extensionToIcon[extension];
         }
-        return this.options.extensionToIcon[''] || 'jsfb-svg-icon jsfb-svg-icon-file fa fa-file';
-    }
-
-    addFile(filename, size, modified, options = {}) {
-        if (!this.options.allowDuplicates) {
-            // If we don't allow duplicates, we'll check if the file already exists}
-            let existing = this.filelist.find((file) => file.filename === filename);
-            if (existing !== undefined) {
-                throw new Error('File already exists');
-            }
-        }
-
-        options = Object.assign({}, {
-            contextMenu: this.options.customContextMenu,
-            icon: options.isDirectory?"fa-regular fa-folder": this._filenameToIcon(filename),
-            type: filename.split('.').pop().toLowerCase(),
-            onClick: this.options.onFileClick,
-            onDoubleClick: this.options.onFileDblClick,
-            isDirectory: false,
-        }, options);
-
-        let file = new FileInFileBrowser(filename, size, modified, options);
-        let nextFile = this._findNextFile(file);
-        if (nextFile !== null) {
-            this.filelist.splice(this.filelist.indexOf(nextFile), 0, file);
-            this._renderFile(file, nextFile);
-        } else {
-            // If there is no next file, we add it at the end
-            this.filelist.push(file);
-            this._renderFile(file);
-        }
-        return file;
-    }
-
-    removeFile(file) {
-        let index = this.filelist.indexOf(file);
-        if (index >= 0) {
-            this.filelist.splice(index, 1);
-        }
-        this.render();
+        return this.options.extensionToIcon[''] || 'fa fa-file';
     }
 
     _createGrid() {
         let grid = document.createElement('div');
-        grid.classList.add('jsfb-filelist-grid');
+        grid.classList.add('fb-grid');
         this._elementsPlace = grid;
         return grid;
     }
 
+    _createPreview() {
+        let preview = document.createElement('div');
+        preview.classList.add('fb-preview');
+        this._elementsPlace = preview;
+        return preview;
+    }
+
     _createList() {
-        let table = document.createElement('table');
-        table.classList.add('jsfb-filelist-table');
-        table.innerHTML = `
-            <thead class="jsfb-filelist-header">
+        let list = document.createElement('div');
+        list.classList.add('fb-list');
+        list.innerHTML = `
+        <table>
+            <thead>
                 <tr>
-                    <th class="jsfb-file-name">Name</th>
-                    <th class="jsfb-file-size">Size</th>
-                    <th class="jsfb-file-modified">Modified</th>
+                    <th class="fb-file-name">Name</th>
+                    <th class="fb-file-size">Size</th>
+                    <th class="fb-file-modified">Modified</th>
                 </tr>
             </thead>
             <tbody></tbody>
+        </table>
         `;
-        this._elementsPlace = table.querySelector('tbody');
-        return table;
+        this._elementsPlace = list.querySelector('tbody');
+        return list;
     }
 
     _renderFiles() {
-        /// First we'll render the folders
-        if (this.options.separateFoldersFromFiles) {
-            this.filelist.forEach(file => {
-                if (file.isDirectory) {
-                    this._renderFile(file);
-                }
-            });
-            this.filelist.forEach(file => {
-                if (!file.isDirectory) {
-                    this._renderFile(file);
-                }
-            });
-        } else {
-            /// And now the files
-            this.filelist.forEach(file => {
-                this._renderFile(file);
-            });
-        }
-    }
-
-    render(mode = null) {
-        if (mode !== null) {
-            this.setMode(mode);
-        }
-        this.filelistElement.innerHTML = '';
-        let element = null;
-        switch (this.mode) {
-            case 'list':
-                element = this._createList();
-                break;
-            case 'grid':
-                element = this._createGrid();
-                break;
-            case 'preview':
-                element = this._createGrid();
-                break;
-        }
-        this._renderFiles();
-        this.filelistElement.appendChild(element);
-        if (this.mode === 'list') {
-            new ResizableColumnTable(element, {
-                sortableHeaders: true,
-                onSort: (column, ascending) => {
-                    switch (column.textContent.trim().toLowerCase()) {
-                        case 'name':
-                            this.sort('filename', ascending == 'asc');
-                            break;
-                        case 'size':
-                            this.sort('size', ascending == 'asc');
-                            break;
-                        case 'modified':
-                            this.sort('modified', ascending == 'asc');
-                            break;
-                    }
-                }
-            });
-        }
-    }
-
-    sort(column, ascending) {
-        // implement manual sorting, by calling render with the new order
-        let sortFunction = this._getSortFunction(column, ascending);
-        this.orderColumn = column;
-        this.orderAscending = ascending;
-        this.filelist.sort(sortFunction);
-        this._elementsPlace.innerHTML = '';
-        this._renderFiles();
+        this.filelist.forEach(file => {
+            this._renderFile(file);
+        });
     }
 }
 
