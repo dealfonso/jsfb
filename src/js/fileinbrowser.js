@@ -18,12 +18,12 @@ class FileInFileBrowser {
         // In case that the file has to be shown first (for example, the '..' file). In this case, there will be no
         //  order in the files, the first file will be shown first.
         showFirst: false,
+        // The URL to be used as a preview (in the preview mode, if the file is not a folder)
+        previewUrl: null,
         // The function to be called when the file is clicked
         onFileClick: null,
         // The function to be called when the file is double clicked
         onFileDoubleClick: null,
-        // The URL to be used as a preview (in the preview mode, if the file is not a folder)
-        previewUrl: null,
         // A user defined data to be stored in the file
         data: null,
         // The context menu options is an object with the options to be shown in the context menu. This is an object
@@ -94,6 +94,12 @@ class FileInFileBrowser {
                         this[option] = options[option];
                         break;
                 }
+            }
+        }
+        if (this.previewUrl !== null) {
+            if (!isValidURL(this.previewUrl)) {
+                this.previewUrl = null;
+                console.warn('The preview URL is not valid');
             }
         }
         this.isDirectory = options.isDirectory??false;
@@ -176,6 +182,9 @@ class FileInFileBrowser {
             dropdownContent.appendChild(item);
         }
         contextMenu.appendChild(dropdownContent);
+
+        new FBDropdown(contextMenu, { closeOnOutsideClick: true });
+
         return contextMenu;
     }
     tableRow() {
