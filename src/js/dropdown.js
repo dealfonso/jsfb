@@ -3,7 +3,7 @@ if (typeof exports === 'undefined') {
 }
 
 /**
- * JSFBDropdown
+ * FBDropdown
  * 
  * A simple dropdown component that can be used to create dropdowns with a toggle button and a content. It is
  *   very similar to the dropdowns in Bootstrap, but it is much simpler and is included in this library to
@@ -15,7 +15,7 @@ if (typeof exports === 'undefined') {
  * Anyway it can be used to create any kind of dropdown.
  */
 
-class JSFBDropdown {
+class FBDropdown {
     static defaults = {
         // Close the dropdown when clicked outside of the dropdown
         closeOnOutsideClick: true,
@@ -27,38 +27,38 @@ class JSFBDropdown {
         openingSideToPage: false,
     };
 
-    static mutationObserver = new MutationObserver((mutations) => {
-        JSFBDropdown.fromDOM(document.querySelectorAll('.fb-dropdown'));
-    });
+    // static mutationObserver = new MutationObserver((mutations) => {
+    //     FBDropdown.fromDOM(document.querySelectorAll('.fb-dropdown'));
+    // });
 
-    static fromDOM(objects, options = {}) {
-        let result = [];
-        if (objects instanceof Element) {
-            objects = [objects];
-        } else if (objects instanceof NodeList) {
-            objects = Array.from(objects);
-        } else if (!Array.isArray(objects)) {
-            throw new Error('Invalid type of objects');
-        }
-        if (objects.length === 0) {
-            return null;
-        }
-        objects.forEach((dropdown) => {
-            let current = dropdown._jsfbDropdown??null;
-            if (current === null) {
-                current = new JSFBDropdown(dropdown, options);
-            }
-            result.push(current);
-        });
-        if (objects.length === 1) {
-            return result[0];
-        }
-        return result;
-    }
+    // static fromDOM(objects, options = {}) {
+    //     let result = [];
+    //     if (objects instanceof Element) {
+    //         objects = [objects];
+    //     } else if (objects instanceof NodeList) {
+    //         objects = Array.from(objects);
+    //     } else if (!Array.isArray(objects)) {
+    //         throw new Error('Invalid type of objects');
+    //     }
+    //     if (objects.length === 0) {
+    //         return null;
+    //     }
+    //     objects.forEach((dropdown) => {
+    //         let current = dropdown._fbDropdown??null;
+    //         if (current === null) {
+    //             current = new FBDropdown(dropdown, options);
+    //         }
+    //         result.push(current);
+    //     });
+    //     if (objects.length === 1) {
+    //         return result[0];
+    //     }
+    //     return result;
+    // }
 
     extractOptions() {
         let options = {};
-        for (let key in JSFBDropdown.defaults) {
+        for (let key in FBDropdown.defaults) {
             if (this.dropdown.dataset[key] !== undefined) {
                 options[key] = this.dropdown.dataset[key];
             }
@@ -67,8 +67,12 @@ class JSFBDropdown {
     }
 
     constructor(dropdown, options = {}) {
+        if (dropdown._fbDropdown !== undefined) {
+            return dropdown._fbDropdown;
+        }
+
         this.dropdown = dropdown;
-        let effectiveOptions = Object.assign({}, JSFBDropdown.defaults, this.extractOptions(), options, );
+        let effectiveOptions = Object.assign({}, FBDropdown.defaults, this.extractOptions(), options, );
         this.options = effectiveOptions;
         this.toggle = dropdown.querySelector('.fb-dropdown-toggle');
         this.content = dropdown.querySelector('.fb-dropdown-content');
@@ -93,7 +97,7 @@ class JSFBDropdown {
         if (this.options.closeOnOutsideClick) {
             document.addEventListener('click', this.documentClickHandler);
         }
-        dropdown._jsfbDropdown = this;
+        dropdown._fbDropdown = this;
     }
 
     show() {
@@ -155,12 +159,11 @@ class JSFBDropdown {
     }
 }
 
-exports.JSFBDropdown = JSFBDropdown;
-exports.JSFBDropdown.version = "1.0.0";
+FBDropdown.version = "1.0.0";
 
-document.addEventListener('DOMContentLoaded', () => {
-    JSFBDropdown.mutationObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-    });
-});
+// document.addEventListener('DOMContentLoaded', () => {
+//     FBDropdown.mutationObserver.observe(document.body, {
+//         childList: true,
+//         subtree: true,
+//     });
+// });
