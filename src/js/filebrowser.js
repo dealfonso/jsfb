@@ -105,6 +105,35 @@ class FileBrowser {
         customContextMenu: null,
     }
 
+    static mutationObserver = new MutationObserver((mutations) => {
+        FileBrowser.fromDOM(document.querySelectorAll('.fb-filebrowser'));
+    });
+
+    static fromDOM(objects, options = {}) {
+        let result = [];
+        if (objects instanceof Element) {
+            objects = [objects];
+        } else if (objects instanceof NodeList) {
+            objects = Array.from(objects);
+        } else if (!Array.isArray(objects)) {
+            throw new Error('Invalid type of objects');
+        }
+        if (objects.length === 0) {
+            return null;
+        }
+        objects.forEach((filebrowser) => {
+            let current = filebrowser._fbFileBrowser??null;
+            if (current === null) {
+                current = new FileBrowser(filebrowser, options);
+            }
+            result.push(current);
+        });
+        if (objects.length === 1) {
+            return result[0];
+        }
+        return result;
+    }    
+
     /**
      * Creates a FileBrowser in the given element with the given options
      * @param {HTMLElement | string} element - the element to create the FileBrowser in (or the selector of the element)
@@ -120,13 +149,13 @@ class FileBrowser {
         }
 
         // If the element already has a FileBrowser, we'll update the options and return the existing FileBrowser
-        if (element._jsfbFileBrowser !== undefined) {
-            element._jsfbFileBrowser.updateOptions(options);
-            return element._jsfbFileBrowser;
+        if (element._fbFileBrowser !== undefined) {
+            element._fbFileBrowser.updateOptions(options);
+            return element._fbFileBrowser;
         }
 
         // We'll get the options from the DOM
-        let optionsFromDOM = this._optionsFromDOM(element);
+        let optionsFromDOM = FileBrowser._optionsFromDOM(element, FileBrowser.defaultOptions, 'fb');
 
         // We'll merge the options from the DOM with the options passed to the constructor (giving priority to the options here)
         this.options = Object.assign({}, FileBrowser.defaultOptions, optionsFromDOM, options);
@@ -143,7 +172,40 @@ class FileBrowser {
         this._evaluateOptions();
 
         // We'll set the FileBrowser in the element (so that we can recover it later)
-        element._jsfbFileBrowser = this;
+        element._fbFileBrowser = this;
+
+        // We'll read pre-existing files in the FileBrowser
+        let files = element.querySelectorAll('fb-file');
+        let existingFiles = Array.from(files).map((file) => {
+            const basicFileInformation = { 
+                filename: "", 
+                size: 0, 
+                modified: null, 
+                isDirectory: false, 
+                type: 'file',
+                previewUrl: null,
+                icon: null,
+                data: null,
+            };
+            let options = FileBrowser._optionsFromDOM(file, basicFileInformation, 'fb');
+            return Object.assign({}, {
+                filename: file.textContent,
+                size: 0,
+                modified: null
+            }, options);
+        });
+
+        // We'll create the FileBrowser
+        this.render();
+
+        // And finally we'll add the existing files
+        existingFiles.forEach((file) => {
+            if (file.isDirectory) {
+                this.addFolder(file.filename, file.modified, file);
+            } else {
+                this.addFile(file.filename, file.size, file.modified, file);
+            }
+        });
     }
 
     /**
@@ -463,9 +525,9 @@ class FileBrowser {
      * @param {string} prefix - the prefix to be used in the data attributes
      * @returns an object with the options extracted from the DOM element
      */
-    _optionsFromDOM(element, prefix = 'jsfb') {
+    static _optionsFromDOM(element, defaultOptions = {}, prefix = 'fb') {
         let options = {};
-        for (let key in FileBrowser.defaultOptions) {
+        for (let key in defaultOptions) {
             let dataKey = prefix + key[0].toUpperCase() + key.slice(1);
             if (element.dataset[dataKey] !== undefined) {
                 let value = element.dataset[dataKey];
@@ -473,7 +535,7 @@ class FileBrowser {
                 // We'll try to convert the value to the correct type
                 if (value === 'true' || value === 'false') {
                     options[key] = value === 'true';
-                } else if (!isNaN(parseFloat(value))) {
+                } else if ((!isNaN(parseFloat(value))) && (parseFloat(value).toString() == value)) {
                     options[key] = parseFloat(value);
                 } else {
                     options[key] = value;
@@ -756,5 +818,13 @@ class FileBrowser {
         });
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    FileBrowser.mutationObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+    FileBrowser.fromDOM(document.querySelectorAll('.fb-filebrowser'));
+});
 
 exports.FileBrowser = FileBrowser;
