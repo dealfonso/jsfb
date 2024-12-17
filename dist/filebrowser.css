@@ -1,0 +1,774 @@
+/**
+    MIT License
+
+    Copyright 2023 Carlos A. (https://github.com/dealfonso)
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+*/
+
+.fb-dropdown {
+  display: inline-block;
+  position: relative;
+  --fb-dropdown-toggle-padding-x: 0.5rem;
+  --fb-dropdown-toggle-padding-y: 0.25rem;
+  --fb-dropdown-content-padding-x: 0.75rem;
+  --fb-dropdown-content-padding-y: 0.5rem;
+  --fb-dropdown-content-border-radius: 0.5rem;
+  --fb-dropdown-font-size: 1rem
+}
+.fb-dropdown-l {
+  --fb-dropdown-toggle-padding-x: 0.5rem;
+  --fb-dropdown-toggle-padding-y: 0.25rem;
+  --fb-dropdown-content-padding-x: 0.875rem;
+  --fb-dropdown-content-padding-y: 0.625rem;
+  --fb-dropdown-content-border-radius: 0.875rem;
+  --fb-dropdown-font-size: 1.25rem
+}
+.fb-dropdown-xl {
+  --fb-dropdown-toggle-padding-x: 0.5rem;
+  --fb-dropdown-toggle-padding-y: 0.25rem;
+  --fb-dropdown-content-padding-x: 1rem;
+  --fb-dropdown-content-padding-y: 0.75rem;
+  --fb-dropdown-content-border-radius: 1rem;
+  --fb-dropdown-font-size: 1.5rem
+}
+.fb-dropdown-s {
+  --fb-dropdown-toggle-padding-x: 0.25rem;
+  --fb-dropdown-toggle-padding-y: 0.125rem;
+  --fb-dropdown-content-padding-x: 0.375rem;
+  --fb-dropdown-content-padding-y: 0.25rem;
+  --fb-dropdown-content-border-radius: 0.25rem;
+  --fb-dropdown-font-size: 0.875rem
+}
+.fb-dropdown-xs {
+  --fb-dropdown-toggle-padding-x: 0.25rem;
+  --fb-dropdown-toggle-padding-y: 0.125rem;
+  --fb-dropdown-content-padding-x: 0.25rem;
+  --fb-dropdown-content-padding-y: 0.125rem;
+  --fb-dropdown-content-border-radius: 0.125rem;
+  --fb-dropdown-font-size: 0.75rem
+}
+.fb-dropdown .fb-dropdown-toggle {
+  background-color: transparent;
+  border: none;
+  font-size: var(--fb-dropdown-font-size);
+  padding: var(--fb-dropdown-toggle-padding-y) var(--fb-dropdown-toggle-padding-x)
+}
+.fb-dropdown ul.fb-dropdown-content {
+  overflow: hidden;
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,.2);
+  z-index: 1;
+  list-style-type: none;
+  border-radius: var(--fb-dropdown-content-border-radius);
+  padding: 0;
+  margin: 0
+}
+.fb-dropdown ul.fb-dropdown-content.show {
+  display: block
+}
+.fb-dropdown .fb-dropdown-content li {
+  display: block;
+  white-space: nowrap;
+  transition: all .5s ease;
+  padding: var(--fb-dropdown-content-padding-y) var(--fb-dropdown-content-padding-x);
+  font-size: var(--fb-dropdown-font-size);
+  cursor: pointer;
+  text-align: left;
+  pointer-events: none
+}
+.fb-dropdown .fb-dropdown-content li * {
+  pointer-events: auto
+}
+.fb-dropdown .fb-dropdown-content li:hover {
+  background-color: #eee
+}
+.fb-dropdown .fb-dropdown-content a,
+.fb-dropdown .fb-dropdown-content button {
+  border: 0;
+  text-decoration: none;
+  color: inherit;
+  background-color: inherit;
+  padding: 0
+}
+.fb-grid {
+  align-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  padding: var(--fb-padding);
+  overflow: auto;
+  height: 100%
+}
+.fb-grid .fb-file-wrapper {
+  display: flex;
+  width: calc(100% - calc(var(--fb-gutter-x) * 2))!important;
+  margin-left: var(--fb-gutter-x);
+  margin-top: var(--fb-gutter-y);
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+}
+.fb-grid .fb-file-wrapper:nth-child(2n) {
+  margin-right: var(--fb-gutter-x)
+}
+.fb-grid .fb-file-wrapper.selected .fb-file {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+  position: relative
+}
+.fb-grid .fb-file-wrapper.selected .fb-file-icon i {
+  color: #fff!important
+}
+.fb-grid .fb-file-wrapper .fb-file {
+  height: fit-content;
+  width: 100%;
+  border: var(--fb-border);
+  border-radius: var(--fb-border-radius);
+  display: flex;
+  box-shadow: 0 0 8px rgba(0,0,0,.2);
+  padding: var(--fb-file-padding);
+  color: #777
+}
+.fb-grid .fb-file-wrapper:hover {
+  cursor: pointer
+}
+.fb-grid .fb-file-wrapper .fb-file-icon {
+  width: var(--fb-icon-size);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: calc(var(--fb-icon-margin-x) + var(--fb-icon-separation));
+  margin-left: var(--fb-icon-margin-x)
+}
+.fb-grid .fb-file-wrapper .fb-file-details {
+  width: calc(100% - var(--fb-icon-size));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden
+}
+.fb-grid .fb-file-wrapper .fb-file p {
+  text-align: left;
+  margin: 0
+}
+.fb-grid .fb-file-wrapper .fb-file-icon i {
+  font-size: var(--fb-icon-size)
+}
+.fb-grid .fb-file-wrapper .fb-file-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 90%;
+  white-space: nowrap
+}
+.fb-grid .fb-file-wrapper .fb-file-modified,
+.fb-grid .fb-file-wrapper .fb-file-size {
+  font-size: .8em
+}
+.fb-grid .fb-file-wrapper .fb-file-overlay {
+  position: absolute;
+  text-align: right;
+  width: calc(100% - calc(var(--fb-file-padding) * 2));
+  margin-left: var(--fb-file-padding);
+  margin-top: var(--fb-file-padding)
+}
+.fb-grid-1 .fb-grid .fb-file-wrapper {
+  flex: 0 0 auto;
+  width: calc(100% - calc(var(--fb-gutter-x) * 2))!important
+}
+.fb-grid-2 .fb-grid .fb-file-wrapper {
+  flex: 0 0 auto;
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+}
+.fb-grid-2 .fb-grid .fb-file-wrapper:nth-child(2n) {
+  margin-right: var(--fb-gutter-x)
+}
+.fb-grid-3 .fb-grid .fb-file-wrapper {
+  flex: 0 0 auto;
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 4)) * .33)!important
+}
+.fb-grid-3 .fb-grid .fb-file-wrapper:nth-child(3n) {
+  margin-right: var(--fb-gutter-x)
+}
+.fb-grid-4 .fb-grid .fb-file-wrapper {
+  flex: 0 0 auto;
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 5)) * .25)!important
+}
+.fb-grid-4 .fb-grid.fb-file-wrapper:nth-child(4n) {
+  margin-right: var(--fb-gutter-x)
+}
+.fb-grid-5 .fb-grid .fb-file-wrapper {
+  flex: 0 0 auto;
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 6)) * .2)!important
+}
+.fb-grid-5 .fb-grid .fb-file-wrapper:nth-child(5n) {
+  margin-right: var(--fb-gutter-x)
+}
+.fb-grid-6 .fb-grid .fb-file-wrapper {
+  flex: 0 0 auto;
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 7)) * .1666666667)!important
+}
+.fb-grid-6 .fb-grid .fb-file-wrapper:nth-child(6n) {
+  margin-right: var(--fb-gutter-x)
+}
+.fb-grid-7 .fb-grid .fb-file-wrapper {
+  flex: 0 0 auto;
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 8)) * .1428571429)!important
+}
+.fb-grid-7 .fb-grid .fb-file-wrapper:nth-child(7n) {
+  margin-right: var(--fb-gutter-x)
+}
+.fb-grid-8 .fb-grid .fb-file-wrapper {
+  flex: 0 0 auto;
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 9)) * .125)!important
+}
+.fb-grid-8 .fb-grid .fb-file-wrapper:nth-child(8n) {
+  margin-right: var(--fb-gutter-x)
+}
+@media screen and (min-width:576px) {
+  .fb-grid .fb-file-wrapper {
+    margin-right: 0!important
+  }
+  .fb-grid-sm-2 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+  }
+  .fb-grid-sm-2 .fb-grid .fb-file-wrapper:nth-child(2n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-sm-3 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 4)) * .33)!important
+  }
+  .fb-grid-sm-3 .fb-grid .fb-file-wrapper:nth-child(3n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-sm-4 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 5)) * .25)!important
+  }
+  .fb-grid-sm-4 .fb-grid .fb-file-wrapper:nth-child(4n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-sm-5 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 6)) * .2)!important
+  }
+  .fb-grid-sm-5 .fb-grid .fb-file-wrapper:nth-child(5n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-sm-6 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 7)) * .1666666667)!important
+  }
+  .fb-grid-sm-6 .fb-grid .fb-file-wrapper:nth-child(6n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-sm-7 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 8)) * .1428571429)!important
+  }
+  .fb-grid-sm-7 .fb-grid .fb-file-wrapper:nth-child(7n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-sm-8 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 9)) * .125)!important
+  }
+  .fb-grid-sm-8 .fb-grid .fb-file-wrapper:nth-child(8n) {
+    margin-right: var(--fb-gutter-x)
+  }
+}
+@media screen and (min-width:768px) {
+  .fb-grid .fb-file-wrapper {
+    margin-right: 0!important
+  }
+  .fb-grid-md-2 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+  }
+  .fb-grid-md-2 .fb-grid .fb-file-wrapper:nth-child(2n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-md-3 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 4)) * .33)!important
+  }
+  .fb-grid-md-3 .fb-grid .fb-file-wrapper:nth-child(3n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-md-4 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 5)) * .25)!important
+  }
+  .fb-grid-md-4 .fb-grid .fb-file-wrapper:nth-child(4n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-md-5 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 6)) * .2)!important
+  }
+  .fb-grid-md-5 .fb-grid .fb-file-wrapper:nth-child(5n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-md-6 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 7)) * .1666666667)!important
+  }
+  .fb-grid-md-6 .fb-grid .fb-file-wrapper:nth-child(6n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-md-7 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 8)) * .1428571429)!important
+  }
+  .fb-grid-md-7 .fb-grid .fb-file-wrapper:nth-child(7n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-md-8 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 9)) * .125)!important
+  }
+  .fb-grid-md-8 .fb-grid .fb-file-wrapper:nth-child(8n) {
+    margin-right: var(--fb-gutter-x)
+  }
+}
+@media screen and (min-width:1024px) {
+  .fb-grid .fb-file-wrapper {
+    margin-right: 0!important
+  }
+  .fb-grid-l-2 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+  }
+  .fb-grid-l-2 .fb-grid .fb-file-wrapper:nth-child(2n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-l-3 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 4)) * .3333334)!important
+  }
+  .fb-grid-l-3 .fb-grid .fb-file-wrapper:nth-child(3n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-l-4 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 5)) * .25)!important
+  }
+  .fb-grid-l-4 .fb-grid .fb-file-wrapper:nth-child(4n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-l-5 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 6)) * .2)!important
+  }
+  .fb-grid-l-5 .fb-grid .fb-file-wrapper:nth-child(5n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-l-6 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 7)) * .1666666667)!important
+  }
+  .fb-grid-l-6 .fb-grid .fb-file-wrapper:nth-child(6n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-l-7 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 8)) * .1428571429)!important
+  }
+  .fb-grid-l-7 .fb-grid .fb-file-wrapper:nth-child(7n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-l-8 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 9)) * .125)!important
+  }
+  .fb-grid-l-8 .fb-grid .fb-file-wrapper:nth-child(8n) {
+    margin-right: var(--fb-gutter-x)
+  }
+}
+@media screen and (min-width:1200px) {
+  .fb-grid .fb-file-wrapper {
+    margin-right: 0!important
+  }
+  .fb-grid-xl-2 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+  }
+  .fb-grid-xl-2 .fb-grid .fb-file-wrapper:nth-child(2n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xl-3 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 4)) * .33)!important
+  }
+  .fb-grid-xl-3 .fb-grid .fb-file-wrapper:nth-child(3n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xl-4 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 5)) * .25)!important
+  }
+  .fb-grid-xl-4 .fb-grid .fb-file-wrapper:nth-child(4n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xl-5 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 6)) * .2)!important
+  }
+  .fb-grid-xl-5 .fb-grid .fb-file-wrapper:nth-child(5n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xl-6 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 7)) * .1666666667)!important
+  }
+  .fb-grid-xl-6 .fb-grid .fb-file-wrapper:nth-child(6n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xl-7 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 8)) * .1428571429)!important
+  }
+  .fb-grid-xl-7 .fb-grid .fb-file-wrapper:nth-child(7n) {
+    margin-right: var(--fb-gutter-x)
+  }
+}
+.fb-preview {
+  align-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  padding: var(--fb-padding);
+  overflow: auto;
+  height: 100%
+}
+.fb-preview .fb-file-wrapper {
+  margin-left: var(--fb-gutter-x);
+  margin-top: var(--fb-gutter-y);
+  position: relative;
+  width: fit-content;
+  height: fit-content
+}
+.fb-preview .fb-file-wrapper .fb-file {
+  position: relative;
+  --fb-preview-file-height: 288px;
+  height: calc(var(--fb-preview-file-height) - var(--fb-file-padding) * 2);
+  width: calc(var(--fb-preview-file-height) - var(--fb-file-padding) * 2);
+  border: var(--fb-border);
+  border-radius: var(--fb-border-radius);
+  box-shadow: 0 0 8px rgba(0,0,0,.2);
+  padding: var(--fb-file-padding);
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none
+}
+.fb-preview-big .fb-preview .fb-file {
+  --fb-preview-file-height: 432px
+}
+.fb-preview-bigger .fb-preview .fb-file {
+  --fb-preview-file-height: 576px
+}
+@media screen and (min-width:768px) {
+  .fb-preview-md-big .fb-preview .fb-file {
+    --fb-preview-file-height: 432px
+  }
+  .fb-preview-md-bigger .fb-preview .fb-file {
+    --fb-preview-file-height: 576px
+  }
+}
+@media screen and (min-width:992px) {
+  .fb-preview-lg-big .fb-preview .fb-file {
+    --fb-preview-file-height: 432px
+  }
+  .fb-preview-lg-bigger .fb-preview .fb-file {
+    --fb-preview-file-height: 576px
+  }
+}
+@media screen and (min-width:1200px) {
+  .fb-preview-xl-big .fb-preview .fb-file {
+    --fb-preview-file-height: 432px
+  }
+  .fb-preview-xl-bigger .fb-preview .fb-file {
+    --fb-preview-file-height: 576px
+  }
+}
+.fb-preview .fb-file-wrapper .fb-file-icon {
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 2em);
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center
+}
+.fb-preview .fb-file-wrapper .fb-file-icon i {
+  font-size: calc(var(--fb-preview-file-height) / 2)
+}
+.fb-preview .fb-file-wrapper .fb-file-details {
+  position: absolute;
+  width: 100%;
+  height: 3em;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: rgba(200,200,200,.6)
+}
+.fb-preview .fb-file-wrapper .fb-file-details p {
+  text-align: center;
+  margin: 0;
+  padding: 0
+}
+.fb-preview .fb-file-wrapper .fb-file-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 90%;
+  white-space: nowrap
+}
+.fb-preview .fb-file-wrapper .fb-file-size {
+  display: none;
+  font-size: .8em;
+  color: #666
+}
+.fb-preview .fb-file-wrapper .fb-file-modified {
+  display: none;
+  font-size: .8em;
+  color: #666
+}
+.fb-preview .fb-file-wrapper.selected .fb-file {
+  background-color: #007bff;
+  color: #fff;
+  position: relative
+}
+.fb-preview .fb-file-wrapper.selected .fb-file-details {
+  background: rgba(0,128,255,.6)
+}
+.fb-preview .fb-file-wrapper.selected .fb-file-icon i {
+  color: #fff
+}
+.fb-preview .fb-file-wrapper.selected .fb-preview-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #007bff;
+  opacity: .7;
+  color: #fff
+}
+.fb-preview .fb-file-wrapper .fb-preview-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%
+}
+.fb-preview .fb-file-wrapper .fb-preview-image .fb-preview-image-background,
+.fb-preview .fb-file-wrapper .fb-preview-image .fb-preview-image-image {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center
+}
+.fb-preview .fb-file-wrapper .fb-preview-image .fb-preview-image-background {
+  background-size: cover;
+  filter: blur(6px) brightness(1.5) saturate(1.5)
+}
+.fb-preview .fb-file-wrapper .fb-preview-overlay {
+  top: 0;
+  position: absolute;
+  text-align: right;
+  width: calc(100% - calc(var(--fb-file-padding) * 2));
+  margin-left: var(--fb-file-padding);
+  margin-top: var(--fb-file-padding);
+  pointer-events: none
+}
+.fb-preview .fb-file-wrapper .fb-preview-overlay button {
+  pointer-events: auto
+}
+.fb-list {
+  padding: 0;
+  overflow: auto;
+  width: 100%;
+  height: 100%
+}
+.fb-list table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0
+}
+.fb-list td {
+  padding: var(--fb-gutter-y) 1.5em;
+  vertical-align: middle;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #666;
+  font-size: .875em
+}
+.fb-list td.fb-file-size {
+  text-align: right
+}
+.fb-list td span.fb-file-icon i {
+  width: 1em;
+  margin-right: .25em
+}
+.fb-list thead {
+  background-color: #f8f9fa;
+  position: sticky;
+  top: 0
+}
+.fb-list thead th {
+  padding: .5em 1.5em;
+  font-weight: 400;
+  text-align: left;
+  position: relative;
+  top: 0;
+  color: #777;
+  font-size: .8em
+}
+.fb-list thead th i {
+  margin-right: .5em;
+  position: absolute;
+  right: 0
+}
+.fb-list thead th i.sorter {
+  cursor: pointer;
+  width: 1em;
+  text-align: center;
+  user-select: none;
+  height: 1em
+}
+.fb-list thead .fb-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2px;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 10;
+  height: 100%
+}
+.fb-list thead .fb-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background-color: #eee
+}
+.fb-list .fb-resizer.resizing,
+.fb-list .fb-resizer:hover {
+  cursor: col-resize
+}
+.fb-list .resizing {
+  pointer-events: none
+}
+.fb-list tr.selected {
+  background-color: #007bff;
+  color: #fff;
+  position: relative
+}
+.fb-list tr.selected td {
+  color: #fff
+}
+.fb-list tr.selected td i {
+  color: #fff
+}
+.fb-filebrowser {
+  --fb-gutter-x: 10px;
+  --fb-gutter-y: 10px;
+  --fb-icon-size: 3em;
+  --fb-icon-margin-x: 0.5em;
+  --fb-icon-separation: 0.5em;
+  --fb-border-radius: 5px;
+  --fb-border: solid 1px #ccc;
+  --fb-file-padding: 0.5em;
+  --fb-padding: 0.5em
+}
+.fb-file-icon .fa-file-pdf {
+  color: red
+}
+.fb-file-icon .fa-file-word {
+  color: #00f
+}
+.fb-file-icon .fa-file-excel {
+  color: green
+}
+.fb-file-icon .fa-file-powerpoint {
+  color: orange
+}
+.fb-file-icon .fa-file-image {
+  color: purple
+}
+.fb-file-icon .fa-file-archive {
+  color: brown
+}
+.fb-file-icon .fa-file-audio {
+  color: #b8860b
+}
+.fb-file-icon .fa-file-video {
+  color: #00008b
+}
+.fb-file-icon .fa-file-code {
+  color: #00f
+}
+.fb-file-icon .fa-file-alt {
+  color: gray
+}
+.fb-file-icon .fa-file {
+  color: #000
+}
+.fb-file-icon .fa-folder {
+  color: #007bff
+}
+.fb-file-icon .fa-reply {
+  color: #007bff
+}
+.fb-hidden {
+  display: none
+}
+.fa-duotone,
+.fa-light,
+.fa-regular,
+.fa-solid,
+.fa-thin,
+.fab,
+.fad,
+.fal,
+.far,
+.fas {
+  background: var(--svg-icon) 0 0 no-repeat;
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  background-position: center
+}
+.fa-ellipsis-v {
+  --svg-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 360a56 56 0 1 0 0 112 56 56 0 1 0 0-112zm0-160a56 56 0 1 0 0 112 56 56 0 1 0 0-112zM120 96A56 56 0 1 0 8 96a56 56 0 1 0 112 0z"/></svg>')
+}
+.fa-file {
+  --svg-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M320 464c8.8 0 16-7.2 16-16l0-288-80 0c-17.7 0-32-14.3-32-32l0-80L64 48c-8.8 0-16 7.2-16 16l0 384c0 8.8 7.2 16 16 16l256 0zM0 64C0 28.7 28.7 0 64 0L229.5 0c17 0 33.3 6.7 45.3 18.7l90.5 90.5c12 12 18.7 28.3 18.7 45.3L384 448c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 64z"/></svg>')
+}
+.fa-sort {
+  --svg-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z"/></svg>');
+  filter: invert(51%) sepia(0%) saturate(0%) hue-rotate(293deg) brightness(92%) contrast(95%)
+}
+.fa-sort-up {
+  --svg-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M182.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-9.2 9.2-11.9 22.9-6.9 34.9s16.6 19.8 29.6 19.8l256 0c12.9 0 24.6-7.8 29.6-19.8s2.2-25.7-6.9-34.9l-128-128z"/></svg>');
+  filter: invert(51%) sepia(0%) saturate(0%) hue-rotate(293deg) brightness(92%) contrast(95%)
+}
+.fa-sort-down {
+  --svg-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M182.6 470.6c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128z"/></svg>');
+  filter: invert(51%) sepia(0%) saturate(0%) hue-rotate(293deg) brightness(92%) contrast(95%)
+}
+.fa-folder {
+  --svg-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M0 96C0 60.7 28.7 32 64 32l132.1 0c19.1 0 37.4 7.6 50.9 21.1L289.9 96 448 96c35.3 0 64 28.7 64 64l0 256c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zM64 80c-8.8 0-16 7.2-16 16l0 320c0 8.8 7.2 16 16 16l384 0c8.8 0 16-7.2 16-16l0-256c0-8.8-7.2-16-16-16l-161.4 0c-10.6 0-20.8-4.2-28.3-11.7L213.1 87c-4.5-4.5-10.6-7-17-7L64 80z"/></svg>')
+}
