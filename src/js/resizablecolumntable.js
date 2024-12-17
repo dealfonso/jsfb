@@ -55,7 +55,7 @@ class ResizableColumnTable {
         }
 
         this.table = table;
-        this.table._jsfbResizableTable = this;
+        this.table._fbResizableTable = this;
         this.headers = headers;
 
         // Create the resizer elements
