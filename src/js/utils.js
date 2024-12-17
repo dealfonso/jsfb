@@ -40,9 +40,10 @@ function covertCallback(callback, context = null) {
         return null;
     }
     if (typeof callback === 'string') {
+        let stringCallback = callback;
         callback = (_) => {
             const file = _;
-            eval(callback);
+            eval(stringCallback);
         }
     }
     if (callback instanceof Function) {
@@ -52,4 +53,21 @@ function covertCallback(callback, context = null) {
         return callback;
     }
     throw new Error('Invalid callback');
+}
+
+/**
+ * Check if the given URL is valid
+ * @param {string|URL} url - The URL to check
+ * @returns {boolean} - True if the URL is valid, false otherwise
+ */
+function isValidURL(url) {
+    if (url instanceof URL) {
+        return true;
+    }
+    try {
+        new URL(url);
+        return true;
+    } catch (_) {
+        return false;
+    }
 }
