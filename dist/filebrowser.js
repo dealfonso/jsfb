@@ -1,25 +1,17 @@
 /**
-    MIT License
+   Copyright 2024 Carlos A. (https://github.com/dealfonso)
 
-    Copyright 2023 Carlos A. (https://github.com/dealfonso)
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
+       http://www.apache.org/licenses/LICENSE-2.0
 
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 (function (exports) {
@@ -273,7 +265,7 @@
 			this._evaluateOptions();
 			this.render();
 		}
-		setMode(mode) {
+		_setMode(mode) {
 			switch (mode.toLowerCase()) {
 			case "list":
 			case "grid":
@@ -379,8 +371,9 @@
 			}
 			return existing;
 		}
-		findFiles(filename) {
-			return this.filelist.filter(file => file.filename === filename);
+		findFiles(filter) {
+			let regex = new RegExp(filter.replace(/\*/g, ".*").replace(/\?/g, "."), "i");
+			return this.filelist.filter(file => regex.test(file.filename));
 		}
 		removeFile(file) {
 			if (file instanceof FileInFileBrowser) {
@@ -408,7 +401,7 @@
 		}
 		render(mode = null) {
 			if (mode !== null) {
-				this.setMode(mode);
+				this._setMode(mode);
 			}
 			this._htmlElement.innerHTML = "";
 			let element = null;
@@ -478,49 +471,42 @@
 			if (this.options.onFileDownload instanceof Function) {
 				contextMenu["download"] = {
 					label: "Download",
-					icon: "fa fa-download",
 					handler: this.options.onFileDownload
 				};
 			}
 			if (this.options.onFileDelete instanceof Function) {
 				contextMenu["delete"] = {
 					label: "Delete",
-					icon: "fa fa-trash",
 					handler: this.options.onFileDelete
 				};
 			}
 			if (this.options.onFileRename instanceof Function) {
 				contextMenu["rename"] = {
 					label: "Rename",
-					icon: "fa fa-edit",
 					handler: this.options.onFileRename
 				};
 			}
 			if (this.options.onFileCopy instanceof Function) {
 				contextMenu["copy"] = {
 					label: "Copy",
-					icon: "fa fa-copy",
 					handler: this.options.onFileCopy
 				};
 			}
 			if (this.options.onFileMove instanceof Function) {
 				contextMenu["move"] = {
 					label: "Move",
-					icon: "fa fa-arrows-alt",
 					handler: this.options.onFileMove
 				};
 			}
 			if (this.options.onFileShare instanceof Function) {
 				contextMenu["share"] = {
 					label: "Share",
-					icon: "fa fa-share-alt",
 					handler: this.options.onFileShare
 				};
 			}
 			if (this.options.onFileInfo instanceof Function) {
 				contextMenu["info"] = {
 					label: "Info",
-					icon: "fa fa-info",
 					handler: this.options.onFileInfo
 				};
 			}
@@ -533,7 +519,7 @@
 		_evaluateOptions() {
 			this.orderColumn = this.options.orderColumn;
 			this.orderAscending = this.options.orderAscending;
-			this.setMode(this.options.mode);
+			this._setMode(this.options.mode);
 			this.options.onFileHtmlElementCreated = this.options.onFileHtmlElementCreated?.bind(this);
 			let callbacks = ["onFileClick", "onFileDoubleClick", "onFileDownload", "onFileDelete", "onFileRename", "onFileCopy", "onFileMove", "onFileShare", "onFileInfo"];
 			callbacks.forEach(callback => {
@@ -701,6 +687,7 @@
 			});
 		}
 	}
+	FileBrowser.version = "1.0.0";
 	document.addEventListener("DOMContentLoaded", () => {
 		FileBrowser.mutationObserver.observe(document.body, {
 			childList: true,
@@ -770,12 +757,6 @@
 						this[option] = options[option];
 						break;
 					}
-				}
-			}
-			if (this.previewUrl !== null) {
-				if (!isValidURL(this.previewUrl)) {
-					this.previewUrl = null;
-					console.warn("The preview URL is not valid");
 				}
 			}
 			this.isDirectory = options.isDirectory ?? false;
