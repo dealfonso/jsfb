@@ -231,7 +231,7 @@ class FileBrowser {
      * @param {string} mode - the mode to be set ("list", "grid" or "preview")
      * @throws {Error} if the mode is invalid
      */
-    setMode(mode) {
+    _setMode(mode) {
         switch (mode.toLowerCase()) {
             case 'list':
             case 'grid':
@@ -409,11 +409,12 @@ class FileBrowser {
     /**
      * Finds all files in the FileBrowser by their name (if there are multiple files with the same name, all of them
      *  will be returned)
-     * @param {string} filename - the name of the file to be found
+     * @param {string} filter - the filter to be used to find the files (bash-like filter)
      * @returns an array with all the FileInFileBrowser objects found (or an empty array if no file was found)
      */
-    findFiles(filename) {
-        return this.filelist.filter((file) => file.filename === filename);
+    findFiles(filter) {
+        let regex = new RegExp(filter.replace(/\*/g, '.*').replace(/\?/g, '.'), 'i');
+        return this.filelist.filter((file) => regex.test(file.filename));
     }
 
     /**
@@ -458,7 +459,7 @@ class FileBrowser {
      */
     render(mode = null) {
         if (mode !== null) {
-            this.setMode(mode);
+            this._setMode(mode);
         }
         this._htmlElement.innerHTML = '';
         let element = null;
@@ -554,49 +555,42 @@ class FileBrowser {
         if (this.options.onFileDownload instanceof Function) {
             contextMenu["download"] = {
                 label: 'Download',
-                icon: 'fa fa-download',
                 handler: this.options.onFileDownload,
             };
         }
         if (this.options.onFileDelete instanceof Function) {
             contextMenu["delete"] = {
                 label: 'Delete',
-                icon: 'fa fa-trash',
                 handler: this.options.onFileDelete,
             };
         }
         if (this.options.onFileRename instanceof Function) {
             contextMenu["rename"] = {
                 label: 'Rename',
-                icon: 'fa fa-edit',
                 handler: this.options.onFileRename,
             };
         }
         if (this.options.onFileCopy instanceof Function) {
             contextMenu["copy"] = {
                 label: 'Copy',
-                icon: 'fa fa-copy',
                 handler: this.options.onFileCopy,
             };
         }
         if (this.options.onFileMove instanceof Function) {
             contextMenu["move"] = {
                 label: 'Move',
-                icon: 'fa fa-arrows-alt',
                 handler: this.options.onFileMove,
             };
         }
         if (this.options.onFileShare instanceof Function) {
             contextMenu["share"] = {
                 label: 'Share',
-                icon: 'fa fa-share-alt',
                 handler: this.options.onFileShare,
             };
         }
         if (this.options.onFileInfo instanceof Function) {
             contextMenu["info"] = {
                 label: 'Info',
-                icon: 'fa fa-info',
                 handler: this.options.onFileInfo,
             };
         }
@@ -613,7 +607,7 @@ class FileBrowser {
         this.orderAscending = this.options.orderAscending;
 
         // Mode of the file browser
-        this.setMode(this.options.mode);
+        this._setMode(this.options.mode);
 
         this.options.onFileHtmlElementCreated = this.options.onFileHtmlElementCreated?.bind(this);
 
@@ -818,6 +812,8 @@ class FileBrowser {
         });
     }
 }
+
+FileBrowser.version = '1.0.0';
 
 document.addEventListener('DOMContentLoaded', () => {
     FileBrowser.mutationObserver.observe(document.body, {
