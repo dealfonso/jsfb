@@ -2,237 +2,340 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>BuFi (Bucket of Files)</title>
+        <title>FileBrowser example</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" integrity="sha512-9xKTRVabjVeZmc+GUW8GgSmcREDunMM+Dt/GrzchfN8tkwHizc5RP4Ok/MXFFy5rIjJjzhndFScTceq5e6GvVQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />        
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">        
-        <link rel="stylesheet" href="src/css/jsfb-filelist.css">
-        <link rel="stylesheet" href="src/css/jsfb-dropdown.css">
-        <script src="src/js/utils.js"></script>
-        <script src="src/js/resizablecolumntable.js"></script>
-        <script src="src/js/fileinbrowser.js"></script>
-        <script src="src/js/filebrowser.js"></script>
-        <script src="src/js/dropdown.js"></script>
+        <script src="dist/filebrowser.js"></script>
+        <link rel="stylesheet" href="dist/filebrowser.css">
         <style>
             html, body {
                 width: 100%;
             }
-            .jsfb-filebrowser {
+            * {
+                font-family: Roboto, sans-serif;
+            }
+            .spacer {
+                flex-grow: 1;
+            }
+            .filebrowser {
                 width: 100%;
-                height: 500px;
+                height: 80%;
                 border: solid 1px #ccc !important;
                 background-color: rgba(255, 255, 255, 0.5);
-                font: Roboto, sans-serif;
                 overflow: auto;
                 display: flex;
                 flex-direction: column;
             }
-            .jsfb-file-wrapper.selected .jsfb-file, tr.selected {
-                background-color: #eee;
-                border-color: #ddd;
-                position: relative
+
+            /** Toolbar */
+            .toolbar {
+                padding: 0.5em 1.5em;
+                border-bottom: solid 1px #ccc;
+                background-color: #f8f9fa;
+                display: flex;
+                justify-content: space-between;
+                vertical-align: middle;
             }
-            .jsfb-file-wrapper.selected .jsfb-file::before, tr.selected::after {
-                position: absolute;
-                font: var(--fa-font-regular);
-                content: '\f14a';
-                margin-top: -0.375em;
-                margin-left: -0.375em;
-                color: #777;
+
+            /** Add the checkmark icon to the selected item */
+            .dropdown-item.selected {
+                display: flex;
             }
-            tr.selected::after {
-                right: 0;
-                top: 0.625em;
-                margin: 0;
+            .dropdown-item.selected::after {
+                content: '\f00c';
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 900;
+                margin-right: 0.5em;
+                margin-left: auto;
+            }
+            .fb-filebrowser {
+                overflow: hidden;
+                width: 100%;
                 height: 100%;
             }
-            .jsfb-file-overlay {
-                position: absolute;
-                text-align: right;
-                width: calc(100% - calc(var(--jsfb-filelist-file-padding) * 2));
-                margin-left: var(--jsfb-filelist-file-padding);
-                margin-top: var(--jsfb-filelist-file-padding);
+            .fb-filebrowser * {
+                user-select: none;
             }
-            .jsfb-file:hover {
-                cursor: pointer;
-            }
-            .btn-tb {
-                --bs-btn-padding-y: 0.125rem;
-                --bs-btn-padding-x: 0.25rem;
-                --bs-btn-font-size: 0.7rem;
-                --bs-btn-border-radius: var(--bs-border-radius-sm);                
-            }
-            /* .jsfb-dropdown-content button i {
-                margin-right: 0.5em;
-            } */
-            .jsfb-spacer {
-                flex: 1;
-            }
-            .jsfb-file-info {
-                padding: 0.5em 1.5em;
+
+            /** The file info */
+            .file-info {
+                padding: 1.5em 1.5em;
                 border-top: solid 1px #ccc;
                 background-color: #f8f9fa;
-                display: flex;
-                justify-content: space-between;
-                vertical-align: middle;
-            }
-            .jsfb-file-info p {
-                margin: 0;
-            }
-            .jsfb-toolbar {
-                padding: 0.5em 1.5em;
-                border-bottom: solid 1px #ccc;
-                background-color: #f8f9fa;
-                display: flex;
-                justify-content: space-between;
-                vertical-align: middle;
-            }
-            /** let's give a look more "mac" to the table header */
-            .jsfb-filelist-header {
-                background-color: #f8f9fa;
-                border-bottom: solid 1px #ccc;
-            }
-            .jsfb-filelist-header th {
-                padding: 0.5em 1.5em;
-                font-weight: normal;
-                text-align: left;
-                position: relative;
-                color: #777;
                 font-size: 0.8em;
             }
-            .jsfb-filelist-header th i {
-                margin-right: 0.5em;
-                position: absolute;
-                right: 0;
+            .file-info p {
+                margin: 0;
             }
-            .jsfb-filelist-header th i.sorter {
-                cursor: pointer;
+            .file-info i {
+                font-size: 3.5em;
+                margin-top: auto;
+                margin-bottom: auto;
             }
-            .jsfb-filelist-header th i.sorter.up::before {
-                content: '\f0de';
-            }
-            .jsfb-filelist-header th i.sorter.down::before {
-                content: '\f0dd';
+            .file-info .label {
+                font-weight: bold;
+                color: #666;
             }
         </style>
         <script>
+            function toHumanSize(size) {
+                if (size === null) {
+                    return '';
+                }
+                if (size < 1024) {
+                    return size + ' B';
+                }
+                if (size < 1024 * 1024) {
+                    return (size / 1024).toFixed(2) + ' KB';
+                }
+                if (size < 1024 * 1024 * 1024) {
+                    return (size / 1024 / 1024).toFixed(2) + ' MB';
+                }
+                return (size / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+            }
+            function friendlyDate(date) {
+                // Función que devuelve una fecha en formato amigable como "hace 5 minutos", "ayer", "hace 3 días", "el 12 de enero de 2022", etc.
+                // Si la fecha es null, devuelve una cadena vacía.
+                if (date === null) {
+                    return '';
+                }
+                let now = new Date();
+                let diff = now - date;
+                let seconds = Math.floor(diff / 1000);
+                let minutes = Math.floor(seconds / 60);
+                let hours = Math.floor(minutes / 60);
+                let days = Math.floor(hours / 24);
+                let months = Math.floor(days / 30);
+                let years = Math.floor(months / 12);
+                if (seconds < 60) {
+                    return 'hace ' + seconds + ' segundos';
+                }
+                if (minutes < 60) {
+                    return 'hace ' + minutes + ' minutos';
+                }
+                if (hours < 24) {
+                    // decimos hace 1 hora y 5 minutos, o hace 2 horas y 1 minuto
+                    if (hours === 1) {
+                        return 'hace 1 hora y ' + (minutes % 60) + ' minutos';
+                    }
+                    if (minutes % 60 === 0) {
+                        return 'hace ' + hours + ' horas';
+                    }
+                    if (hours < 6) {
+                        return 'hace ' + hours + ' horas y ' + (minutes % 60) + ' minutos';
+                    }
+                    return 'hace ' + hours + ' horas';
+                }
+                if (days < 30) {
+                    if (days === 1) {
+                        return 'ayer';
+                    }
+                    return 'hace ' + days + ' días';
+                }
+                if (months < 12) {
+                    return 'hace ' + months + ' meses';
+                }
+                return 'el ' + date.toLocaleDateString();
+            }
+            function nextDateUpdate(date) {
+                // Función que devuelve el tiempo en milisegundos hasta la próxima actualización de la fecha amigable.
+                // Si la fecha es null, devuelve 1 minuto.
+                if (date === null) {
+                    return 60000;
+                }
+                let now = new Date();
+                let diff = now - date;
+                let seconds = Math.floor(diff / 1000);
+                
+                if (seconds < 10) {
+                    return 1000;
+                }
 
+                if (seconds < 60) {
+                    // al siguiente multiplo de 10 segundos
+                    return (5 - (seconds % 5)) * 1000 + 500;
+                }
+
+                let minutes = Math.floor(seconds / 60);
+                if (minutes < 60) {
+                    return (60 - (minutes % 60)) * 60000 + 500;
+                }
+
+                let hours = Math.floor(minutes / 60);
+                return (24 - (hours % 24)) * 3600000 + 500;
+            }
         </script>
     </head>
     <body>
-        <div class="container h-100 w-100 d-flex">
+        <div class="h-100 w-100 d-flex">
             <div class="m-auto text-center w-100">
-                <div class="jsfb-filebrowser">
-                    <div class="jsfb-toolbar">
-                        <div class="jsfb-dropdown" data-select-name="sort">
-                            <button class="jsfb-dropdown-toggle" type="button">
-                                <i class="fas fa-arrow-up-wide-short"></i>
-                            </button>
-                            <ul class="jsfb-dropdown-content">
-                                <li><button class="w-100 text-start" onclick="sort('nombre', this)">nombre</button></li>
-                                <li><button class="w-100 text-start" onclick="sort('fecha', this)">fecha</button></li>
-                                <li><button class="w-100 text-start" onclick="sort('tamaño', this)">tamaño</button></li>
-                                <li><button class="w-100 text-start" onclick="sort('tipo', this)">tipo</button></li>
-                            </ul>
-                        </div>
+                <div class="filebrowser">
+                    <div class="toolbar">
                         <div class="btn-group" role="group">
                             <button class="btn btn-light" type="button" onclick="changeListMode('list');">
                                 <i class="fas fa-list-ul"></i>
                             </button>
                             <button class="btn btn-light" type="button" onclick="changeListMode('grid');">
-                                <i class="fas fa-th-large"></i>
+                                <i class="fas fa-table-cells"></i>
                             </button>
+                            <button class="btn btn-light" type="button" onclick="changeListMode('preview');">
+                                <i class="fas fa-table-cells-large"></i>
+                            </button>
+                            <div class="btn-group dropdown">
+                                <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-arrow-up-wide-short"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><button class="dropdown-item w-100 text-start selected" onclick="sort('filename', this)">nombre</button></li>
+                                    <li><button class="dropdown-item w-100 text-start" onclick="sort('modified', this)">fecha</button></li>
+                                    <li><button class="dropdown-item w-100 text-start" onclick="sort('size', this)">tamaño</button></li>
+                                    <li><button class="dropdown-item w-100 text-start" onclick="sort('type', this)">tipo</button></li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="jsfb-spacer"></div>
+                        <div class="spacer"></div>
                         <div class="btn-group" role="group">
-                            <button class="btn btn-light" type="button">
-                                <i class="fas fa-share-nodes"></i>
-                            </button>
-                            <button class="btn btn-light" type="button">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                            <button class="btn btn-light" type="button">
-                                <i class="fa-regular fa-pen-to-square"></i>
-                            </button>
-                            <button class="btn btn-light" type="button">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button class="btn btn-light" type="button">
+                            <button class="btn btn-light" type="button" disabled="true">
                                 <i class="fas fa-upload"></i>
-                            </button>
-                            
-                            <button class="btn btn-light" type="button">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            </button>                            
                         </div>
                     </div>
-                    <div class="jsfb-filelist jsfb-filelist-1 jsfb-filelist-sm-2 jsfb-filelist-l-4 jsfb-filelist-xl-6">
+                    <div class="fb-filebrowser fb-grid-6 fb-grid-sm-2 fb-grid-lg-4 fb-grid-xl-6"
+                    data-fb-mode="grid" data-fb-separate-folders-from-files="true"
+                    >
                         <!-- File list goes here -->
-                        <div class="jsfb-file-wrapper">
-                            <div class="jsfb-file">
-                                <div class="jsfb-file-icon">
-                                    <i class="fas fa-file"></i>
-                                </div>
-                                <div class="jsfb-file-details">
-                                    <p class="jsfb-file-name">a very long name for file1.txt</p>
-                                    <p class="jsfb-file-size">1.2 MB</p>
-                                    <p class="jsfb-file-modified">2022-01-01 12:00:00</p>
-                                </div>
-                            </div>
-                            <div class="jsfb-file-overlay">
-                                <div class="jsfb-dropdown" data-opening-side="left">
-                                    <button class="jsfb-dropdown-toggle" type="button">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="jsfb-dropdown-content">
-                                        <li><button type="button">download</button></li>
-                                        <li><button type="button">delete</button></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="jsfb-file-wrapper">
-                            <div class="jsfb-file">
-                                <div class="jsfb-file-icon">
-                                    <i class="fas fa-file"></i>
-                                </div>
-                                <div class="jsfb-file-details">
-                                    <p class="jsfb-file-name">a very long name for file1.txt</p>
-                                    <p class="jsfb-file-size">1.2 MB</p>
-                                    <p class="jsfb-file-modified">2022-01-01 12:00:00</p>
-                                </div>
-                            </div>
-                            <div class="jsfb-file-overlay">
-                                <div class="jsfb-dropdown" data-opening-side="auto">
-                                    <button class="jsfb-dropdown-toggle" type="button">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="jsfb-dropdown-content">
-                                        <li><button type="button">download</button></li>
-                                        <li><button type="button">delete</button></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-                    <div class="jsfb-spacer"></div>
-                    <div class="jsfb-file-info">
-                        <p class="jsfb-file-icon"><i class="fas fa-file"></i></p>
-                        <p class="jsfb-file-name">a very long name for file1.txt</p>
-                        <p class="jsfb-file-size">1.2 MB</p>
-                        <p class="jsfb-file-modified">2022-01-01 12:00:00</p>
+                    <div class="file-info d-none d-flex">
+                        <div class="ms-auto fb-file-icon h-100 d-flex">
+                            <i class="fas fa-file"></i>
+                        </div>
+                        <div class="details me-auto ms-3 text-start">
+                            <p><span class="label">Name: </span><span class="file-name"></span></p>
+                            <p><span class="label">Size: </span><span class="file-size"></span></p>
+                            <p><span class="label">Modified: </span><span class="file-modified"></span></p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </body>
     <script>
+        function ltrim(str, charlist) {
+            if (charlist === undefined) {
+                charlist = '\s';
+            }
+            return str.replace(new RegExp('^[' + charlist + ']+'), '');
+        }
+
+        var filesystemMock = {folders:[{name:"dist",data:{folders:[],files:[{filename:"filebrowser.compress.js",size:23720,modified:"2024-12-13 19:16:43"},{filename:"filebrowser.compress.js.map",size:70188,modified:"2024-12-13 19:16:43"},{filename:"filebrowser.css",size:24110,modified:"2024-12-13 18:58:54"},{filename:"filebrowser.full.js",size:37271,modified:"2024-12-13 19:16:41"},{filename:"filebrowser.js",size:37509,modified:"2024-12-13 19:16:42"},{filename:"filebrowser.min.css",size:20509,modified:"2024-12-13 18:58:54"},{filename:"filebrowser.min.css.map",size:30688,modified:"2024-12-13 18:58:54"},{filename:"filebrowser.min.js",size:24843,modified:"2024-12-13 19:16:42"},{filename:"filebrowser.min.js.map",size:73077,modified:"2024-12-13 19:16:42"},{filename:"filebrowser.module.js",size:37329,modified:"2024-12-13 19:16:43"},{filename:"filebrowser.raw.css",size:25172,modified:"2024-12-13 18:58:54"},{filename:"filebrowser.raw.js",size:58099,modified:"2024-12-13 19:16:41"}],modified:"2024-12-11 13:30:49"}},{name:"img",data:{folders:[],files:[{filename:"grid-view.png",size:145796,modified:"2024-12-04 10:38:42"},{filename:"list-view.png",size:110817,modified:"2024-12-04 10:38:50"}],modified:"2024-12-04 10:40:33"}},{name:"src",data:{folders:[{name:"css",data:{folders:[],files:[{filename:"fb-dropdown.css",size:2880,modified:"2024-12-12 12:35:10"},{filename:"fb-filelist-grid.css",size:11206,modified:"2024-12-11 13:27:30"},{filename:"fb-filelist-preview.css",size:4384,modified:"2024-12-11 13:27:30"},{filename:"fb-filelist-table.css",size:1805,modified:"2024-12-12 12:31:20"},{filename:"fb-filelist.css",size:1228,modified:"2024-12-13 18:53:18"},{filename:"fb-icon-fallback.css",size:3669,modified:"2024-12-11 13:27:30"}],modified:"2024-12-11 13:30:16"}},{name:"js",data:{folders:[],files:[{filename:"dropdown.js",size:5813,modified:"2024-12-11 13:27:30"},{filename:"filebrowser.js",size:35024,modified:"2024-12-14 16:19:08"},{filename:"fileinbrowser.js",size:12446,modified:"2024-12-13 19:02:19"},{filename:"resizablecolumntable.js",size:7496,modified:"2024-12-11 13:27:30"},{filename:"utils.js",size:1330,modified:"2024-12-12 08:55:25"}],modified:"2024-11-29 09:27:58"}}],files:[],modified:"2024-11-20 18:49:13"}}],files:[{filename:"LICENSE",size:1081,modified:"2024-11-20 18:44:33"},{filename:"Makefile",size:6759,modified:"2024-12-11 13:27:53"},{filename:"README.md",size:13992,modified:"2024-12-11 13:27:30"},{filename:"devel.php",size:4468,modified:"2024-11-20 18:44:33"},{filename:"example.html",size:22463,modified:"2024-12-14 16:22:01"},{filename:"mock.php",size:2762,modified:"2024-12-14 16:23:52"},{filename:"notice",size:1169,modified:"2024-11-20 18:44:33"},{filename:"notice.min",size:108,modified:"2024-11-20 18:44:33"}],modified:"2024-12-12 20:06:55"};
+
+        var currentDir = "/";
+        var selectedFile = null;
+        var updateTimeout = null;
+        var fileBrowser = null;
+
+        function changeDir(dir) {
+            clearSelectedFile();
+
+            let targetDir = dir.trim();
+            if (targetDir === '') {
+                targetDir = '/';
+            }
+            let path = targetDir.split('/');
+            if (path[path.length - 1] === '') {
+                path.pop();
+            }
+
+            // remove the first empty element (as it is the root)
+            path.shift();
+
+            let currentFolderData = filesystemMock;
+            while (path.length > 0) {
+                if (path[0] === '') {
+                    path.shift();
+                    continue;
+                }
+                let folder = path.shift();
+                let folders = currentFolderData.folders;
+                currentFolderData = null;
+                for (let i = 0; i < folders.length; i++) {
+                    if (folders[i].name == folder) {
+                        currentFolderData = folders[i].data;
+                        break;
+                    }
+                }
+                if (!currentFolderData) {
+                    throw new Error('Folder not found: ' + folder);
+                }
+            }
+            fileBrowser.clear();
+            if (targetDir !== '/') {
+                fileBrowser.addFolder('..', null, { icon: 'fas fa-reply', showFirst: true, contextMenu: null });
+            }
+            currentFolderData.files.forEach((file) => {
+                let extension = file.filename.split('.').pop();
+                fileBrowser.addFile(""+file.filename, file.size, file.modified, { 
+                    showFirst: file.filename[0] === '.',
+                    data: ltrim(targetDir + '/', '/') + file.filename,
+                    previewUrl: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(extension) ? 'img/' + file.filename : null,
+                });
+            });
+            currentFolderData.folders.forEach((folder) => {
+                fileBrowser.addFolder(""+folder.name, folder.data.modified, { 
+                    showFirst: folder.name[0] === '.',
+                    data: ltrim(targetDir + '/', '/') + folder.name,
+                    contextMenu: null
+                });
+            });
+            currentDir = targetDir;
+        }
+
+        function clearSelectedFile() {
+            let previousFile = selectedFile;
+            if (selectedFile) {
+                selectedFile.unselect();
+                selectedFile = null;
+            }
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);
+                updateTimeout = null;
+            }
+            document.querySelector('.file-info').classList.add('d-none');
+            return previousFile;
+        }
+
+        function selectFile(file) {
+            if (clearSelectedFile() === file) {
+                return;
+            }
+            selectedFile = file;
+            selectedFile.select();
+            updateSelectedFileInfo(file);
+        }
+
+        function updateSelectedFileInfo() {
+            let fileInfo = document.querySelector('.file-info');
+            fileInfo.classList.remove('d-none');
+            fileInfo.querySelector('.fb-file-icon i').className = selectedFile.icon;
+            fileInfo.querySelector('.file-name').textContent = selectedFile.filename;
+            fileInfo.querySelector('.file-size').textContent = toHumanSize(selectedFile.size);
+            let date = selectedFile.modified!==null?new Date(selectedFile.modified):null;
+            fileInfo.querySelector('.file-modified').textContent = friendlyDate(date);
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);
+                updateTimeout = null;
+            }
+            updateTimeout = setTimeout(() => {
+                updateSelectedFileInfo();
+            }, nextDateUpdate(date));
+        }
+
         function sort(criterio, element) {
             // get siblings of element and remove class active
-            console.log(criterio)
             let siblings = element.parentElement.parentElement.children;
             siblings = Array.from(siblings);
             siblings.forEach((sibling) => {
@@ -242,84 +345,39 @@
             });
             // add class active to element
             element.classList.add('selected');
-            // sort files
-            fileBrowser.filelist = fileBrowser.filelist.sort((a, b) => {
-                if (criterio === 'nombre') {
-                    return a.filename.localeCompare(b.filename);
-                } else if (criterio === 'fecha') {
-                    return a.modified - b.modified;
-                } else if (criterio === 'tamaño') {
-                    return a.size - b.size;
-                } else if (criterio === 'tipo') {
-                    return a.type.localeCompare(b.type);
-                }
-            });
-            fileBrowser.render();
+            fileBrowser.sort(criterio, true);
         }
+
         function changeListMode(mode) {
             fileBrowser.render(mode);
         }
-        let fileBrowser = null;
+
         document.addEventListener('DOMContentLoaded', () => {
-            fileBrowser = new FileBrowser(document.querySelector('.jsfb-filebrowser'),
+            fileBrowser = new FileBrowser(document.querySelector('.fb-filebrowser'),
                 {
                     onFileClick: (file) => {
-                        console.log('Clicked on file:', file);
-                        if (file.selected) {
-                            file.unselect();
-                        } else {
-                            file.select();
+                        if (!file.isDirectory) {
+                            selectFile(file);
                         }
                     },
-                    onFileDblClick: (file) => {
-                        console.log('Double clicked on file:', file);
+                    onFileDoubleClick: (file) => {
+                        if (file.isDirectory) {
+                            if (file.filename === '..') {
+                                let path = currentDir.split('/');
+                                path.pop();
+                                changeDir(path.join('/'));
+                            } else {
+                                changeDir(currentDir + '/' + file.filename);
+                            }
+                        }
                     },
-                    // overlayGenerator: (file) => {
-                    //     let overlay = document.createElement('div');
-                    //     overlay.classList.add('dropdown');
-                    //     overlay.innerHTML = `
-                    //         <button class="btn btn-tb btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    //             <i class="fas fa-ellipsis-v"></i>
-                    //         </button>
-                    //         <ul class="dropdown-menu">
-                    //             <li><button class="dropdown-item" type="button">download</button></li>
-                    //             <li><button class="dropdown-item" type="button">delete</button></li>
-                    //         </ul>
-                    //     `;
-                    //     return overlay;
-                    // }
+                    onFileDelete: (file) => { console.log('Delete file', file); },
+                    onFileDownload: (file) => {},
+                    onFileRename: (file) => {},
+                    onFileInfo: (file) => {},
                 }
             );
-            fileBrowser.render();
-
-            function addFile(i) {
-                if (i < 20) {
-                    console.log('Adding file', i);
-                    let extensions = ['txt', 'jpg', 'png', 'pdf', 'docx', 'ppt', 'xls', 'wav', 'mp3', 'mov'];
-                    // get a random extension
-                    let extension = extensions[Math.floor(Math.random() * extensions.length)];
-                    let file = fileBrowser.addFile('file' + i + '.' + extension , 1200 + i * 100, '2022-01-01 12:00:00');
-                    setTimeout(() => {
-                        addFile(i + 1);
-                    }, 1000);
-                }
-            }
-            addFile(0);
-            // for (let i = 0; i < 20; i++) {
-            //     let file = fileBrowser.addFile('a very long file name for a file number ' + i + '.txt', 1200 + i * 100, '2022-01-01 12:00:00');
-            // }
-
-
-            let file1 = fileBrowser.addFile('file1.txt', 1200, '2022-01-01 12:00:00');
-            let file2 = fileBrowser.addFile('file2.jpg', 1300, '2022-01-02 12:00:00');
-            let file3 = fileBrowser.addFile('file3.png', 1400, '2022-01-03 12:00:00');
-            let file4 = fileBrowser.addFile('file4.pdf', 1500, '2022-01-04 12:00:00');
-            let file5 = fileBrowser.addFile('file5.docx', 1600, '2022-01-05 12:00:00');
-            let file6 = fileBrowser.addFile('file6.ppt', 1700, '2022-01-06 12:00:00');
-            let file7 = fileBrowser.addFile('file7.xls', 1800, '2022-01-07 12:00:00');
-            let file8 = fileBrowser.addFile('file8.wav', 1900, '2022-01-08 12:00:00');
-            let file9 = fileBrowser.addFile('file9.mp3', 2000, '2022-01-09 12:00:00');
-            let file10 = fileBrowser.addFile('file10.mov', 2100, '2022-01-10 12:00:00');
+            changeDir('/');
         });
     </script>
 </html>
