@@ -96,12 +96,12 @@ class FileInFileBrowser {
                 }
             }
         }
-        if (this.previewUrl !== null) {
-            if (!isValidURL(this.previewUrl)) {
-                this.previewUrl = null;
-                console.warn('The preview URL is not valid');
-            }
-        }
+        // if (this.previewUrl !== null) {
+        //     if (!isValidURL(this.previewUrl)) {
+        //         this.previewUrl = null;
+        //         console.warn('The preview URL is not valid');
+        //     }
+        // }
         this.isDirectory = options.isDirectory??false;
     }
     select() {
