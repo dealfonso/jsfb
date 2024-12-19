@@ -649,7 +649,7 @@
 			if (extension in this.options.extensionToIcon) {
 				return this.options.extensionToIcon[extension];
 			}
-			return this.options.extensionToIcon[""] || "fa fa-file";
+			return this.options.extensionToIcon[""] || "far fa-file";
 		}
 		_createGrid() {
 			let grid = document.createElement("div");
