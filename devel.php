@@ -46,7 +46,7 @@
 
 // Name of the library (if empty, it will be the name of the directory). 
 // IMPORTANT: Make sure that it matches the name of the library in the Makefile
-$LIBRARY_NAME = "";
+$LIBRARY_NAME = "filebrowser";
 
 if (empty($LIBRARY_NAME)) {
     $LIBRARY_NAME = basename(__DIR__);
@@ -56,6 +56,8 @@ define("DERIVED_FILES", [
     "dist/{$LIBRARY_NAME}.js",
     "dist/{$LIBRARY_NAME}.min.js",
     "dist/{$LIBRARY_NAME}.compress.js",
+    "dist/{$LIBRARY_NAME}.css",
+    "dist/{$LIBRARY_NAME}.min.css",
 ]);
 
 if(!defined('STDERR')) define('STDERR', fopen('php://stderr', 'wb'));

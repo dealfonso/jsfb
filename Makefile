@@ -1,9 +1,9 @@
 # Name of the library (if not specified, the name of the current folder will be used)
-LIBRARY_NAME = 
+LIBRARY_NAME = filebrowser
 # The files that compose your library (if not specified, all the .js files in the src folder will be used)
-FILES = src/*.js
+FILES = src/js/*.js
 # The css files that accompany your library (if not specified, no css files will be used)
-CSSFILES = 
+CSSFILES = src/css/*.css
 # Folder in which the build files will be located (if not specified, the folder "dist" will be used)
 DIST_FOLDER =
 # Dependencies of your library (if not specified, no dependencies will be used)
