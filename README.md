@@ -354,12 +354,14 @@ let fb = new FileBrowser('.fb-filebrowser', {
 
 ### Grid mode
 
-In the grid mode, the default behavior is to show two files per row. This can be changed by using the classes:
+In the grid mode, the default behavior is to show 2 files per row (i.e. `fb-grid-2`). This can be changed by using the classes:
 
 - `fb-grid-1`, `fb-grid-2`, `fb-grid-3`, `fb-grid-4`, `fb-grid-5`, `fb-grid-6`, `fb-grid-7`, `fb-grid-8`: To show one, two, three, four, five, six, seven or eight files per row.
 
 It is also possible to change the amount of files per row depending on the screen size by using the classes:
 
+- From `fb-grid-1` to `fb-grid-8`: To set the amount of files per row for all screens.
+- From `fb-grid-xs-1` to `fb-grid-xs-8`: To set the amount of files per row for extra small screens (e.g. smartphones).
 - From `fb-grid-sm-1` to `fb-grid-sm-8`: To set the amount of files per row for small screens.
 - From `fb-grid-md-1` to `fb-grid-md-8`: To set the amount of files per row for medium screens.
 - From `fb-grid-lg-1` to `fb-grid-lg-8`: To set the amount of files per row for large screens.
