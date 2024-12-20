@@ -813,7 +813,7 @@ class FileBrowser {
     }
 }
 
-FileBrowser.version = '1.0.0';
+FileBrowser.version = '1.0.1';
 
 document.addEventListener('DOMContentLoaded', () => {
     FileBrowser.mutationObserver.observe(document.body, {
