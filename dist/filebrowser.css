@@ -112,12 +112,11 @@
 }
 .fb-grid .fb-file-wrapper {
   display: flex;
-  width: calc(100% - calc(var(--fb-gutter-x) * 2))!important;
   margin-left: var(--fb-gutter-x);
   margin-top: var(--fb-gutter-y);
   position: relative;
   flex: 0 0 auto;
-  width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)
 }
 .fb-grid .fb-file-wrapper:nth-child(2n) {
   margin-right: var(--fb-gutter-x)
@@ -187,60 +186,113 @@
 }
 .fb-grid-1 .fb-grid .fb-file-wrapper {
   flex: 0 0 auto;
-  width: calc(100% - calc(var(--fb-gutter-x) * 2))!important
+  width: calc(100% - calc(var(--fb-gutter-x) * 2))
 }
 .fb-grid-2 .fb-grid .fb-file-wrapper {
   flex: 0 0 auto;
-  width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)
 }
 .fb-grid-2 .fb-grid .fb-file-wrapper:nth-child(2n) {
   margin-right: var(--fb-gutter-x)
 }
 .fb-grid-3 .fb-grid .fb-file-wrapper {
   flex: 0 0 auto;
-  width: calc(calc(100% - calc(var(--fb-gutter-x) * 4)) * .33)!important
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 4)) * .33)
 }
 .fb-grid-3 .fb-grid .fb-file-wrapper:nth-child(3n) {
   margin-right: var(--fb-gutter-x)
 }
 .fb-grid-4 .fb-grid .fb-file-wrapper {
   flex: 0 0 auto;
-  width: calc(calc(100% - calc(var(--fb-gutter-x) * 5)) * .25)!important
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 5)) * .25)
 }
 .fb-grid-4 .fb-grid.fb-file-wrapper:nth-child(4n) {
   margin-right: var(--fb-gutter-x)
 }
 .fb-grid-5 .fb-grid .fb-file-wrapper {
   flex: 0 0 auto;
-  width: calc(calc(100% - calc(var(--fb-gutter-x) * 6)) * .2)!important
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 6)) * .2)
 }
 .fb-grid-5 .fb-grid .fb-file-wrapper:nth-child(5n) {
   margin-right: var(--fb-gutter-x)
 }
 .fb-grid-6 .fb-grid .fb-file-wrapper {
   flex: 0 0 auto;
-  width: calc(calc(100% - calc(var(--fb-gutter-x) * 7)) * .1666666667)!important
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 7)) * .1666666667)
 }
 .fb-grid-6 .fb-grid .fb-file-wrapper:nth-child(6n) {
   margin-right: var(--fb-gutter-x)
 }
 .fb-grid-7 .fb-grid .fb-file-wrapper {
   flex: 0 0 auto;
-  width: calc(calc(100% - calc(var(--fb-gutter-x) * 8)) * .1428571429)!important
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 8)) * .1428571429)
 }
 .fb-grid-7 .fb-grid .fb-file-wrapper:nth-child(7n) {
   margin-right: var(--fb-gutter-x)
 }
 .fb-grid-8 .fb-grid .fb-file-wrapper {
   flex: 0 0 auto;
-  width: calc(calc(100% - calc(var(--fb-gutter-x) * 9)) * .125)!important
+  width: calc(calc(100% - calc(var(--fb-gutter-x) * 9)) * .125)
 }
 .fb-grid-8 .fb-grid .fb-file-wrapper:nth-child(8n) {
   margin-right: var(--fb-gutter-x)
 }
+@media screen and (max-width:575px) {
+  .fb-grid .fb-file-wrapper {
+    margin-right: 0!important
+  }
+  .fb-grid-xs-1 .fb-grid .fb-file-wrapper {
+    width: calc(100% - calc(var(--fb-gutter-x) * 2))!important
+  }
+  .fb-grid-xs-2 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
+  }
+  .fb-grid-xs-2 .fb-grid .fb-file-wrapper:nth-child(2n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xs-3 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 4)) * .33)!important
+  }
+  .fb-grid-xs-3 .fb-grid .fb-file-wrapper:nth-child(3n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xs-4 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 5)) * .25)!important
+  }
+  .fb-grid-xs-4 .fb-grid .fb-file-wrapper:nth-child(4n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xs-5 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 6)) * .2)!important
+  }
+  .fb-grid-xs-5 .fb-grid .fb-file-wrapper:nth-child(5n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xs-6 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 7)) * .1666666667)!important
+  }
+  .fb-grid-xs-6 .fb-grid .fb-file-wrapper:nth-child(6n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xs-7 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 8)) * .1428571429)!important
+  }
+  .fb-grid-xs-7 .fb-grid .fb-file-wrapper:nth-child(7n) {
+    margin-right: var(--fb-gutter-x)
+  }
+  .fb-grid-xs-8 .fb-grid .fb-file-wrapper {
+    width: calc(calc(100% - calc(var(--fb-gutter-x) * 9)) * .125)!important
+  }
+  .fb-grid-xs-8 .fb-grid .fb-file-wrapper:nth-child(8n) {
+    margin-right: var(--fb-gutter-x)
+  }
+}
 @media screen and (min-width:576px) {
   .fb-grid .fb-file-wrapper {
     margin-right: 0!important
+  }
+  .fb-grid-sm-1 .fb-grid .fb-file-wrapper {
+    width: calc(100% - calc(var(--fb-gutter-x) * 2))!important
   }
   .fb-grid-sm-2 .fb-grid .fb-file-wrapper {
     width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
@@ -289,6 +341,9 @@
   .fb-grid .fb-file-wrapper {
     margin-right: 0!important
   }
+  .fb-grid-md-1 .fb-grid .fb-file-wrapper {
+    width: calc(100% - calc(var(--fb-gutter-x) * 2))!important
+  }
   .fb-grid-md-2 .fb-grid .fb-file-wrapper {
     width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
   }
@@ -336,6 +391,9 @@
   .fb-grid .fb-file-wrapper {
     margin-right: 0!important
   }
+  .fb-grid-lg-1 .fb-grid .fb-file-wrapper {
+    width: calc(100% - calc(var(--fb-gutter-x) * 2))!important
+  }
   .fb-grid-lg-2 .fb-grid .fb-file-wrapper {
     width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
   }
@@ -382,6 +440,9 @@
 @media screen and (min-width:1200px) {
   .fb-grid .fb-file-wrapper {
     margin-right: 0!important
+  }
+  .fb-grid-xl-1 .fb-grid .fb-file-wrapper {
+    width: calc(100% - calc(var(--fb-gutter-x) * 2))!important
   }
   .fb-grid-xl-2 .fb-grid .fb-file-wrapper {
     width: calc(calc(100% - calc(var(--fb-gutter-x) * 3)) * .5)!important
