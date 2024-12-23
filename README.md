@@ -116,7 +116,7 @@ The `fb-filebrowser` element is the container of the file browser. It can have t
 - `data-fb-separate-folders-from-files`: Whether to separate the folders from the files. If `true`, the files will always be shown before any other file. The default value is `true`.
 - `data-fb-on-file-click`: A function to be called when a file is clicked.
 - `data-fb-on-file-double-click`: A function to be called when a file is double clicked. 
-- `data-fb-on-file-html-element-created`: A function to be called when the html element that represents the file is created.
+- `data-fb-on-html-created`: A function to be called when the html element that represents the file is created.
 
 And a set of callbacks that will be used to create a context menu for the files:
 
@@ -212,7 +212,7 @@ The `options` object can have the following properties:
 - `separateFoldersFromFiles`: Whether to separate the folders from the files. If `true`, the files will always be shown before any other file. The default value is `true`.
 - `onFileClick`: A function to be called when a file is clicked `(file) => {}`.
 - `onFileDoubleClick`: A function to be called when a file is double clicked `(file) => {}`.
-- `onFileHtmlElementCreated`: A function to be called when the html element that represents the file is created `(htmlElement, file, mode) => {}`.
+- `onHtmlCreated`: A function to be called when the html element that represents the file is created `(htmlElement, file, mode) => {}`.
 - `overlayGenerator`: Is a function whose aim is to generate a "toolbar" for the file, which will be overlayed to the grid or the preview file element. The prototype is `(file) => {}` and it should return an html element that will be overlayed to the file element.
 - `extensionToIcon`: Is a dictionary with the keys being the extension (without the dot), and the value being a css string to be used as the class of the icon for the file. There is a default value dictionary (`FileBrowser.extensionToIcon`) which is based on the classes of the [Font Awesome](https://fontawesome.com/) library.
 - `customContextMenu`: A dictionary with the keys being the labels for the actions of the context menu and the values, the callback to use `(file) => {}` when the option is selected.

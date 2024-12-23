@@ -170,7 +170,7 @@
 			onFileClick: file => {},
 			onFileDoubleClick: file => {},
 			overlayGenerator: file => null,
-			onFileHtmlElementCreated: (element, file, mode) => {},
+			onHtmlCreated: (element, file, mode) => {},
 			onFileDownload: null,
 			onFileDelete: null,
 			onFileRename: null,
@@ -520,7 +520,7 @@
 			this.orderColumn = this.options.orderColumn;
 			this.orderAscending = this.options.orderAscending;
 			this._setMode(this.options.mode);
-			this.options.onFileHtmlElementCreated = this.options.onFileHtmlElementCreated?.bind(this);
+			this.options.onHtmlCreated = this.options.onHtmlCreated?.bind(this);
 			let callbacks = ["onFileClick", "onFileDoubleClick", "onFileDownload", "onFileDelete", "onFileRename", "onFileCopy", "onFileMove", "onFileShare", "onFileInfo"];
 			callbacks.forEach(callback => {
 				this.options[callback] = covertCallback(this.options[callback], this);
@@ -551,7 +551,7 @@
 			if (this.options.hideZeroSize && file.size === 0) {
 				element.querySelector(".fb-file-size").innerHTML = "";
 			}
-			this.options.onFileHtmlElementCreated?.call(this, element, file, this.mode);
+			this.options.onHtmlCreated?.call(this, element, file, this.mode);
 			if (nextFile !== null) {
 				nextFile._htmlElement.insertAdjacentElement("beforebegin", element);
 			} else {
@@ -687,7 +687,7 @@
 			});
 		}
 	}
-	FileBrowser.version = "1.0.1";
+	FileBrowser.version = "1.0.2";
 	document.addEventListener("DOMContentLoaded", () => {
 		FileBrowser.mutationObserver.observe(document.body, {
 			childList: true,
