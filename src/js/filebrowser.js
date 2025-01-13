@@ -161,8 +161,8 @@ class FileBrowser {
         this.options = Object.assign({}, FileBrowser.defaultOptions, optionsFromDOM, options);
 
         // Finally we'll initialize the FileBrowser
-        this.orderColumn = null;
-        this.orderAscending = null;
+        // this.orderColumn = null;
+        // this.orderAscending = null;
         this.mode = null;
         this.filelist = [];
         this._elementsPlace = null;
@@ -265,11 +265,11 @@ class FileBrowser {
         let nextFile = this._findNextFile(file);
         if (nextFile !== null) {
             this.filelist.splice(this.filelist.indexOf(nextFile), 0, file);
-            this._renderFile(file, nextFile);
+            this._placeFile(this._renderFile(file), nextFile);
         } else {
             // If there is no next file, we add it at the end
             this.filelist.push(file);
-            this._renderFile(file);
+            this._placeFile(this._renderFile(file));
         }
         return file;
     }
@@ -309,9 +309,10 @@ class FileBrowser {
         if (existing.isDirectory) {
             throw new Error('Existing file is not a file');
         }
-        existing.update(options);
-        this.render();
-        return existing;
+        return this.updateFile(filename, options);
+        // existing.update(options);
+        // this.render();
+        // return existing;
     }
 
     /**
@@ -327,7 +328,31 @@ class FileBrowser {
         if (existing === null) {
             throw new Error('File not found');
         }
-        return this.addOrUpdateFile(filename, options);
+
+        let htmlElement = existing._htmlElement;
+        existing.update(options);
+
+        // We'll remove the element and re-insert it in the correct place
+        // let nextFile = this._findNextFile(existing);
+        // if (nextFile !== null) {
+        //     nextFile._htmlElement.insertAdjacentElement('beforebegin', htmlElement);
+        // }
+
+        // htmlElement.remove();
+        // let file = new FileInFileBrowser(filename, options);
+        // let nextFile = this._findNextFile(file);
+        // if (nextFile !== null) {
+        //     this.filelist.splice(this.filelist.indexOf(nextFile), 0, file);
+        //     this._placeFile(this._renderFile(file), nextFile);
+        // } else {
+        //     // If there is no next file, we add it at the end
+        //     this.filelist.push(file);
+        //     this._placeFile(this._renderFile(file));
+        // }
+
+        this.render();
+        return existing;
+        // return this.addOrUpdateFile(filename, options);
     }
 
     /**
@@ -477,7 +502,7 @@ class FileBrowser {
         this._renderFiles();
         this._htmlElement.appendChild(element);
         if (this.mode === 'list') {
-            new ResizableColumnTable(element, {
+            let resizableColumnTable = new ResizableColumnTable(element, {
                 sortableHeaders: true,
                 onSort: (column, ascending) => {
                     switch (column.textContent.trim().toLowerCase()) {
@@ -493,6 +518,17 @@ class FileBrowser {
                     }
                 }
             });
+            switch (this.options.orderColumn) {
+                case 'filename':
+                    resizableColumnTable.setOrder(0, this.options.orderAscending?'asc':'desc');
+                    break;
+                case 'size':
+                    resizableColumnTable.setOrder(1, this.options.orderAscending?'asc':'desc');
+                    break;
+                case 'modified':
+                    resizableColumnTable.setOrder(2, this.options.orderAscending?'asc':'desc');
+                    break;
+            }
         }
     }
 
@@ -504,8 +540,8 @@ class FileBrowser {
      */
     sort(column, ascending) {
         let sortFunction = this._getSortFunction(column, ascending);
-        this.orderColumn = column;
-        this.orderAscending = ascending;
+        this.options.orderColumn = column;
+        this.options.orderAscending = ascending;
         this.filelist.sort(sortFunction);
         this._elementsPlace.innerHTML = '';
         this._renderFiles();
@@ -603,8 +639,8 @@ class FileBrowser {
 
     _evaluateOptions() {
         // Order of the columns
-        this.orderColumn = this.options.orderColumn;
-        this.orderAscending = this.options.orderAscending;
+        // this.orderColumn = this.options.orderColumn;
+        // this.orderAscending = this.options.orderAscending;
 
         // Mode of the file browser
         this._setMode(this.options.mode);
@@ -632,7 +668,16 @@ class FileBrowser {
         }
     }
 
-    _renderFile(file, nextFile = null) {
+    _placeFile(file, nextFile = null) {
+        if (nextFile !== null) {
+            nextFile._htmlElement.insertAdjacentElement('beforebegin', file._htmlElement);
+        } else {
+            this._elementsPlace.appendChild(file._htmlElement);
+        }
+        return file;
+    }
+
+    _renderFile(file) {
         let element = null;
         switch (this.mode) {
             case 'list':
@@ -650,11 +695,7 @@ class FileBrowser {
             element.querySelector('.fb-file-size').innerHTML = '';
         }
         this.options.onHtmlCreated?.call(this, element, file, this.mode);
-        if (nextFile !== null) {
-            nextFile._htmlElement.insertAdjacentElement('beforebegin', element);
-        } else {
-            this._elementsPlace.appendChild(element);
-        }
+        return file;
     }
 
     /**
@@ -703,10 +744,10 @@ class FileBrowser {
      */
     _getSortFunction(column = null, ascending = null) {
         if (column === null) {
-            column = this.orderColumn;
+            column = this.options.orderColumn;
         }
         if (ascending === null) {
-            ascending = this.orderAscending;
+            ascending = this.options.orderAscending;
         }
         let sortFunction = null;
         let checkDirectoryAndShowFirst = this._getDirectoryAndShowFirstComparisonFunctions();
@@ -808,12 +849,12 @@ class FileBrowser {
 
     _renderFiles() {
         this.filelist.forEach(file => {
-            this._renderFile(file);
+            this._placeFile(this._renderFile(file));
         });
     }
 }
 
-FileBrowser.version = '1.0.2';
+FileBrowser.version = '1.0.3';
 
 document.addEventListener('DOMContentLoaded', () => {
     FileBrowser.mutationObserver.observe(document.body, {

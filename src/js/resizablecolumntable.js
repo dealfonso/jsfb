@@ -85,6 +85,35 @@ class ResizableColumnTable {
         // this.updateResizerHeight();
     }
 
+    setOrder(column, direction) {
+        if (typeof column !== 'number') {
+            throw new Error('Column index must be a number');
+        }
+        if ((column < this.options.firstColumn) || (column > this.options.lastColumn)) {
+            throw new Error('Column index out of range');
+        }
+        let header = this.headers[column];
+        let icon = header.querySelector('.sorter');
+        if (icon == null) {
+            throw new Error('Column is not sortable');
+        }
+        icon.removeClasses(this.options.classSorterUp);
+        icon.removeClasses(this.options.classSorterDown);
+        icon.addClasses(this.options.classUnsorted);
+        if (direction == 'asc') {
+            icon.removeClasses(this.options.classUnsorted);
+            icon.addClasses(this.options.classSorterUp);
+            icon.removeClasses(this.options.classSorterDown);
+        } else
+        if (direction == 'desc') {
+            icon.removeClasses(this.options.classUnsorted);
+            icon.removeClasses(this.options.classSorterUp);
+            icon.addClasses(this.options.classSorterDown);
+        } else {
+            throw new Error('Invalid direction');
+        }
+    }
+
     addSortingIcons() {
         let columnIndexes = [];
 

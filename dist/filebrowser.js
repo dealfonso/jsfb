@@ -220,8 +220,6 @@
 			}
 			let optionsFromDOM = FileBrowser._optionsFromDOM(element, FileBrowser.defaultOptions, "fb");
 			this.options = Object.assign({}, FileBrowser.defaultOptions, optionsFromDOM, options);
-			this.orderColumn = null;
-			this.orderAscending = null;
 			this.mode = null;
 			this.filelist = [];
 			this._elementsPlace = null;
@@ -295,10 +293,10 @@
 			let nextFile = this._findNextFile(file);
 			if (nextFile !== null) {
 				this.filelist.splice(this.filelist.indexOf(nextFile), 0, file);
-				this._renderFile(file, nextFile);
+				this._placeFile(this._renderFile(file), nextFile);
 			} else {
 				this.filelist.push(file);
-				this._renderFile(file);
+				this._placeFile(this._renderFile(file));
 			}
 			return file;
 		}
@@ -321,16 +319,17 @@
 			if (existing.isDirectory) {
 				throw new Error("Existing file is not a file");
 			}
-			existing.update(options);
-			this.render();
-			return existing;
+			return this.updateFile(filename, options);
 		}
 		updateFile(filename, options = {}) {
 			let existing = this.findFile(filename);
 			if (existing === null) {
 				throw new Error("File not found");
 			}
-			return this.addOrUpdateFile(filename, options);
+			let htmlElement = existing._htmlElement;
+			existing.update(options);
+			this.render();
+			return existing;
 		}
 		addFolder(name, modified, options = {}) {
 			return this._addFile(name, Object.assign({}, {
@@ -419,7 +418,7 @@
 			this._renderFiles();
 			this._htmlElement.appendChild(element);
 			if (this.mode === "list") {
-				new ResizableColumnTable(element, {
+				let resizableColumnTable = new ResizableColumnTable(element, {
 					sortableHeaders: true,
 					onSort: (column, ascending) => {
 						switch (column.textContent.trim().toLowerCase()) {
@@ -435,12 +434,23 @@
 						}
 					}
 				});
+				switch (this.options.orderColumn) {
+				case "filename":
+					resizableColumnTable.setOrder(0, this.options.orderAscending ? "asc" : "desc");
+					break;
+				case "size":
+					resizableColumnTable.setOrder(1, this.options.orderAscending ? "asc" : "desc");
+					break;
+				case "modified":
+					resizableColumnTable.setOrder(2, this.options.orderAscending ? "asc" : "desc");
+					break;
+				}
 			}
 		}
 		sort(column, ascending) {
 			let sortFunction = this._getSortFunction(column, ascending);
-			this.orderColumn = column;
-			this.orderAscending = ascending;
+			this.options.orderColumn = column;
+			this.options.orderAscending = ascending;
 			this.filelist.sort(sortFunction);
 			this._elementsPlace.innerHTML = "";
 			this._renderFiles();
@@ -517,8 +527,6 @@
 			return null;
 		}
 		_evaluateOptions() {
-			this.orderColumn = this.options.orderColumn;
-			this.orderAscending = this.options.orderAscending;
 			this._setMode(this.options.mode);
 			this.options.onHtmlCreated = this.options.onHtmlCreated?.bind(this);
 			let callbacks = ["onFileClick", "onFileDoubleClick", "onFileDownload", "onFileDelete", "onFileRename", "onFileCopy", "onFileMove", "onFileShare", "onFileInfo"];
@@ -535,7 +543,15 @@
 				throw new Error("Invalid extensionToIcon");
 			}
 		}
-		_renderFile(file, nextFile = null) {
+		_placeFile(file, nextFile = null) {
+			if (nextFile !== null) {
+				nextFile._htmlElement.insertAdjacentElement("beforebegin", file._htmlElement);
+			} else {
+				this._elementsPlace.appendChild(file._htmlElement);
+			}
+			return file;
+		}
+		_renderFile(file) {
 			let element = null;
 			switch (this.mode) {
 			case "list":
@@ -552,11 +568,7 @@
 				element.querySelector(".fb-file-size").innerHTML = "";
 			}
 			this.options.onHtmlCreated?.call(this, element, file, this.mode);
-			if (nextFile !== null) {
-				nextFile._htmlElement.insertAdjacentElement("beforebegin", element);
-			} else {
-				this._elementsPlace.appendChild(element);
-			}
+			return file;
 		}
 		_getDirectoryAndShowFirstComparisonFunctions() {
 			if (this.options.separateFoldersFromFiles) {
@@ -589,10 +601,10 @@
 		}
 		_getSortFunction(column = null, ascending = null) {
 			if (column === null) {
-				column = this.orderColumn;
+				column = this.options.orderColumn;
 			}
 			if (ascending === null) {
-				ascending = this.orderAscending;
+				ascending = this.options.orderAscending;
 			}
 			let sortFunction = null;
 			let checkDirectoryAndShowFirst = this._getDirectoryAndShowFirstComparisonFunctions();
@@ -683,11 +695,11 @@
 		}
 		_renderFiles() {
 			this.filelist.forEach(file => {
-				this._renderFile(file);
+				this._placeFile(this._renderFile(file));
 			});
 		}
 	}
-	FileBrowser.version = "1.0.2";
+	FileBrowser.version = "1.0.3";
 	document.addEventListener("DOMContentLoaded", () => {
 		FileBrowser.mutationObserver.observe(document.body, {
 			childList: true,
@@ -1071,6 +1083,33 @@
 			}
 			if (this.options.sortableHeaders) {
 				this.addSortingIcons();
+			}
+		}
+		setOrder(column, direction) {
+			if (typeof column !== "number") {
+				throw new Error("Column index must be a number");
+			}
+			if (column < this.options.firstColumn || column > this.options.lastColumn) {
+				throw new Error("Column index out of range");
+			}
+			let header = this.headers[column];
+			let icon = header.querySelector(".sorter");
+			if (icon == null) {
+				throw new Error("Column is not sortable");
+			}
+			icon.removeClasses(this.options.classSorterUp);
+			icon.removeClasses(this.options.classSorterDown);
+			icon.addClasses(this.options.classUnsorted);
+			if (direction == "asc") {
+				icon.removeClasses(this.options.classUnsorted);
+				icon.addClasses(this.options.classSorterUp);
+				icon.removeClasses(this.options.classSorterDown);
+			} else if (direction == "desc") {
+				icon.removeClasses(this.options.classUnsorted);
+				icon.removeClasses(this.options.classSorterUp);
+				icon.addClasses(this.options.classSorterDown);
+			} else {
+				throw new Error("Invalid direction");
 			}
 		}
 		addSortingIcons() {
