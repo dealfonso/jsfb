@@ -54,10 +54,9 @@ class FileInFileBrowser {
         this._htmlElement = null;
     }
 
-    _setModified(modified) {
+    _modifiedToDate(modified) {
         if (modified === null) {
-            this.modified = null;
-            return;
+            return null;
         }
         if ((typeof modified === 'string') || (modified instanceof String)) {
             // Check if the string is a number
@@ -78,8 +77,59 @@ class FileInFileBrowser {
             }
         }
         if (modified instanceof Date) {
-            this.modified = modified;
-        } 
+            return modified;
+        }
+        return null;
+    }
+
+    _setModified(modified) {
+        this.modified = this._modifiedToDate(modified);
+
+        // if (modified === null) {
+        //     this.modified = null;
+        //     return;
+        // }
+        // if ((typeof modified === 'string') || (modified instanceof String)) {
+        //     // Check if the string is a number
+        //     if (!isNaN(modified)) {
+        //         modified = parseInt(modified);
+        //     }
+        //     else {
+        //         let date = new Date(modified);
+        //         if (date.toString() !== 'Invalid Date') {
+        //             modified = date;
+        //         }
+        //     }
+        // }
+        // if ((typeof modified === 'number') || (modified instanceof Number)) {
+        //     let date = new Date(modified);
+        //     if (date.toString() !== 'Invalid Date') {
+        //         modified = date;
+        //     }
+        // }
+        // if (modified instanceof Date) {
+        //     this.modified = modified;
+        // } 
+    }
+
+    compareOptions(options) {
+        for (let option in FileInFileBrowser.defaultOptions) {
+            if (options[option] !== undefined) {
+                switch (option) {
+                    case 'modified':
+                        if (this.modified?.getTime() !== this._modifiedToDate(options[option])?.getTime()) {
+                            return false;
+                        }
+                        break;
+                    default:
+                        if (this[option] !== options[option]) {
+                            return false;
+                        }
+                        break;
+                }
+            }
+        }
+        return true;
     }
 
     update(options = {}) {

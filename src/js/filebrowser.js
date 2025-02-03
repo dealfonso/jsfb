@@ -150,7 +150,10 @@ class FileBrowser {
 
         // If the element already has a FileBrowser, we'll update the options and return the existing FileBrowser
         if (element._fbFileBrowser !== undefined) {
-            element._fbFileBrowser.updateOptions(options);
+            if (Object.keys(options).length > 0) {
+                console.warn('Options are being ignored as the FileBrowser already exists. Please use updateOptions instead');
+            }
+            // element._fbFileBrowser.updateOptions(options);
             return element._fbFileBrowser;
         }
 
@@ -215,12 +218,30 @@ class FileBrowser {
      *                              the options are being updated from a clear state (true)
      */
     updateOptions(options, fromClear = false) {
+        let existingOptions = Object.assign({}, this.options);
+
         if (fromClear) {
             this.options = Object.assign({}, FileBrowser.defaultOptions, options);
         } else {
             this.options = Object.assign({}, this.options, options);
         }
         this._evaluateOptions();
+
+        // We'll check if the options have changed and if so, we'll re-render the FileBrowser
+        let changed = false;
+        for (let key in this.options) {
+            if (typeof this.options[key] === 'function') {
+                continue;
+            }
+            if (this.options[key] != existingOptions[key]) {
+                changed = true;
+                break;
+            }
+        }
+        if (!changed) {
+            return;
+        }
+
         // We'll re-render the FileBrowser, as the options have changed and the file order might have changed because
         //  of the orderColumn and orderAscending
         this.render();
@@ -330,29 +351,23 @@ class FileBrowser {
         }
 
         let htmlElement = existing._htmlElement;
+        if (existing.compareOptions(options)) {
+            return existing;
+        }
+        htmlElement.remove();
         existing.update(options);
 
         // We'll remove the element and re-insert it in the correct place
-        // let nextFile = this._findNextFile(existing);
-        // if (nextFile !== null) {
-        //     nextFile._htmlElement.insertAdjacentElement('beforebegin', htmlElement);
-        // }
-
-        // htmlElement.remove();
-        // let file = new FileInFileBrowser(filename, options);
-        // let nextFile = this._findNextFile(file);
-        // if (nextFile !== null) {
-        //     this.filelist.splice(this.filelist.indexOf(nextFile), 0, file);
-        //     this._placeFile(this._renderFile(file), nextFile);
-        // } else {
-        //     // If there is no next file, we add it at the end
-        //     this.filelist.push(file);
-        //     this._placeFile(this._renderFile(file));
-        // }
-
-        this.render();
+        let nextFile = this._findNextFile(existing);
+        if (nextFile !== null) {
+            this.filelist.splice(this.filelist.indexOf(nextFile), 0, existing);
+            this._placeFile(this._renderFile(existing), nextFile);
+        } else {
+            // If there is no next file, we add it at the end
+            this.filelist.push(existing);
+            this._placeFile(this._renderFile(existing));
+        }
         return existing;
-        // return this.addOrUpdateFile(filename, options);
     }
 
     /**
@@ -372,6 +387,7 @@ class FileBrowser {
             }, options, {
                 isDirectory: true,
                 modified: modified,
+                type: 'folder',
             }
         ));
     }
@@ -388,7 +404,33 @@ class FileBrowser {
         if (existing === null) {
             throw new Error('Folder not found');
         }
-        return this.addOrUpdateFolder(name, options);
+        if (!existing.isDirectory) {
+            throw new Error('Existing file is not a folder');
+        }
+
+        options = Object.assign({}, options, {
+            isDirectory: true,
+            type: 'folder',
+        });
+
+        let htmlElement = existing._htmlElement;
+        if (existing.compareOptions(options)) {
+            return existing;
+        }
+        htmlElement.remove();
+        existing.update(options);
+
+        // We'll remove the element and re-insert it in the correct place
+        let nextFile = this._findNextFile(existing);
+        if (nextFile !== null) {
+            this.filelist.splice(this.filelist.indexOf(nextFile), 0, existing);
+            this._placeFile(this._renderFile(existing), nextFile);
+        } else {
+            // If there is no next file, we add it at the end
+            this.filelist.push(existing);
+            this._placeFile(this._renderFile(existing));
+        }
+        return existing;
     }
 
     /**
@@ -398,23 +440,18 @@ class FileBrowser {
      * @returns the FileInFileBrowser object created or updated
      */
     addOrUpdateFolder(name, options = {}) {
+        let existing = this.findFile(name);
         options = Object.assign({}, options, {
             isDirectory: true,
             type: 'folder',
         });
-
-        let existing = this.findFile(name);
         if (existing === null) {
-            return this.addFolder(name, new Date(), options);
+            return this.addFile(filename, 0, new Date(), options);
         }
         if (!existing.isDirectory) {
             throw new Error('Existing file is not a folder');
         }
-
-        existing.update(options);
-
-        this.render();
-        return existing;
+        return this.updateFolder(filename, options);
     }
 
     /**
@@ -454,16 +491,13 @@ class FileBrowser {
                 this.filelist.splice(index, 1);
             }
         } else if (typeof file === 'string') {
-            let files = this.getFiles(file);
-            if (files.length === 0) {
-                return;
-            }
-            files.forEach((file) => {
+            file = this.findFile(file);
+            if (file !== null) {
                 let index = this.filelist.indexOf(file);
                 if (index >= 0) {
                     this.filelist.splice(index, 1);
                 }
-            });
+            };
         }
         this.render();
     }
@@ -483,6 +517,8 @@ class FileBrowser {
      * @throws {Error} if the mode is invalid
      */
     render(mode = null) {
+        // Show trace of calls
+        // console.trace("FileBrowser.render");
         if (mode !== null) {
             this._setMode(mode);
         }
@@ -854,7 +890,7 @@ class FileBrowser {
     }
 }
 
-FileBrowser.version = '1.0.3';
+FileBrowser.version = '1.0.4';
 
 document.addEventListener('DOMContentLoaded', () => {
     FileBrowser.mutationObserver.observe(document.body, {

@@ -215,7 +215,9 @@
 				throw new Error("Invalid element");
 			}
 			if (element._fbFileBrowser !== undefined) {
-				element._fbFileBrowser.updateOptions(options);
+				if (Object.keys(options).length > 0) {
+					console.warn("Options are being ignored as the FileBrowser already exists. Please use updateOptions instead");
+				}
 				return element._fbFileBrowser;
 			}
 			let optionsFromDOM = FileBrowser._optionsFromDOM(element, FileBrowser.defaultOptions, "fb");
@@ -255,12 +257,26 @@
 			});
 		}
 		updateOptions(options, fromClear = false) {
+			let existingOptions = Object.assign({}, this.options);
 			if (fromClear) {
 				this.options = Object.assign({}, FileBrowser.defaultOptions, options);
 			} else {
 				this.options = Object.assign({}, this.options, options);
 			}
 			this._evaluateOptions();
+			let changed = false;
+			for (let key in this.options) {
+				if (typeof this.options[key] === "function") {
+					continue;
+				}
+				if (this.options[key] != existingOptions[key]) {
+					changed = true;
+					break;
+				}
+			}
+			if (!changed) {
+				return;
+			}
 			this.render();
 		}
 		_setMode(mode) {
@@ -327,8 +343,19 @@
 				throw new Error("File not found");
 			}
 			let htmlElement = existing._htmlElement;
+			if (existing.compareOptions(options)) {
+				return existing;
+			}
+			htmlElement.remove();
 			existing.update(options);
-			this.render();
+			let nextFile = this._findNextFile(existing);
+			if (nextFile !== null) {
+				this.filelist.splice(this.filelist.indexOf(nextFile), 0, existing);
+				this._placeFile(this._renderFile(existing), nextFile);
+			} else {
+				this.filelist.push(existing);
+				this._placeFile(this._renderFile(existing));
+			}
 			return existing;
 		}
 		addFolder(name, modified, options = {}) {
@@ -337,7 +364,8 @@
 				size: null
 			}, options, {
 				isDirectory: true,
-				modified: modified
+				modified: modified,
+				type: "folder"
 			}));
 		}
 		updateFolder(name, options = {}) {
@@ -345,23 +373,42 @@
 			if (existing === null) {
 				throw new Error("Folder not found");
 			}
-			return this.addOrUpdateFolder(name, options);
-		}
-		addOrUpdateFolder(name, options = {}) {
+			if (!existing.isDirectory) {
+				throw new Error("Existing file is not a folder");
+			}
 			options = Object.assign({}, options, {
 				isDirectory: true,
 				type: "folder"
 			});
+			let htmlElement = existing._htmlElement;
+			if (existing.compareOptions(options)) {
+				return existing;
+			}
+			htmlElement.remove();
+			existing.update(options);
+			let nextFile = this._findNextFile(existing);
+			if (nextFile !== null) {
+				this.filelist.splice(this.filelist.indexOf(nextFile), 0, existing);
+				this._placeFile(this._renderFile(existing), nextFile);
+			} else {
+				this.filelist.push(existing);
+				this._placeFile(this._renderFile(existing));
+			}
+			return existing;
+		}
+		addOrUpdateFolder(name, options = {}) {
 			let existing = this.findFile(name);
+			options = Object.assign({}, options, {
+				isDirectory: true,
+				type: "folder"
+			});
 			if (existing === null) {
-				return this.addFolder(name, new Date(), options);
+				return this.addFile(filename, 0, new Date(), options);
 			}
 			if (!existing.isDirectory) {
 				throw new Error("Existing file is not a folder");
 			}
-			existing.update(options);
-			this.render();
-			return existing;
+			return this.updateFolder(filename, options);
 		}
 		findFile(filename) {
 			let existing = this.filelist.find(file => file.filename === filename);
@@ -381,16 +428,13 @@
 					this.filelist.splice(index, 1);
 				}
 			} else if (typeof file === "string") {
-				let files = this.getFiles(file);
-				if (files.length === 0) {
-					return;
-				}
-				files.forEach(file => {
+				file = this.findFile(file);
+				if (file !== null) {
 					let index = this.filelist.indexOf(file);
 					if (index >= 0) {
 						this.filelist.splice(index, 1);
 					}
-				});
+				}
 			}
 			this.render();
 		}
@@ -699,7 +743,7 @@
 			});
 		}
 	}
-	FileBrowser.version = "1.0.3";
+	FileBrowser.version = "1.0.4";
 	document.addEventListener("DOMContentLoaded", () => {
 		FileBrowser.mutationObserver.observe(document.body, {
 			childList: true,
@@ -732,10 +776,9 @@
 			this.selected = false;
 			this._htmlElement = null;
 		}
-		_setModified(modified) {
+		_modifiedToDate(modified) {
 			if (modified === null) {
-				this.modified = null;
-				return;
+				return null;
 			}
 			if (typeof modified === "string" || modified instanceof String) {
 				if (!isNaN(modified)) {
@@ -754,8 +797,31 @@
 				}
 			}
 			if (modified instanceof Date) {
-				this.modified = modified;
+				return modified;
 			}
+			return null;
+		}
+		_setModified(modified) {
+			this.modified = this._modifiedToDate(modified);
+		}
+		compareOptions(options) {
+			for (let option in FileInFileBrowser.defaultOptions) {
+				if (options[option] !== undefined) {
+					switch (option) {
+					case "modified":
+						if (this.modified?.getTime() !== this._modifiedToDate(options[option])?.getTime()) {
+							return false;
+						}
+						break;
+					default:
+						if (this[option] !== options[option]) {
+							return false;
+						}
+						break;
+					}
+				}
+			}
+			return true;
 		}
 		update(options = {}) {
 			let optionNames = Object.keys(FileInFileBrowser.defaultOptions);
