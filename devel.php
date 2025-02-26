@@ -60,6 +60,23 @@ define("DERIVED_FILES", [
     "dist/{$LIBRARY_NAME}.min.css",
 ]);
 
+$content_types = [
+    'css' => 'text/css',
+    'gif' => 'image/gif',
+    'htm' => 'text/html',
+    'html' => 'text/html',
+    'ico' => 'image/x-icon',
+    'jpeg' => 'image/jpeg',
+    'jpg' => 'image/jpeg',
+    'js' => 'text/javascript',
+    'json' => 'application/json',
+    'pdf' => 'application/pdf',
+    'png' => 'image/png',
+    'svg' => 'image/svg+xml',
+    'txt' => 'text/plain',
+    'xml' => 'text/xml',
+];
+
 if(!defined('STDERR')) define('STDERR', fopen('php://stderr', 'wb'));
 
 function debug(...$var) {
@@ -81,6 +98,8 @@ if (in_array($trimmedURI, DERIVED_FILES)) {
     $filePath = realpath(ltrim($_SERVER["REQUEST_URI"], '/'));
 
     if (file_exists($filePath)) {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        header("Content-Type: " . ($content_types[$ext] ?? 'application/octet-stream'));
         echo file_get_contents($filePath);
     } else {
         header("HTTP/1.1 500 Internal Server Error");
