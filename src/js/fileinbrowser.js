@@ -257,14 +257,14 @@ class FileInFileBrowser {
         if (this.selected) {
             row.classList.add('selected');
         }
-        row.addEventListener('click', () => {
+        row.addEventListener('click', (e) => {
             if (this.onFileClick instanceof Function) {
-                this.onFileClick(this);
+                this.onFileClick(this, e);
             }
         });
-        row.addEventListener('dblclick', () => {
+        row.addEventListener('dblclick', (e) => {
             if (this.onFileDoubleClick instanceof Function) {
-                this.onFileDoubleClick(this);
+                this.onFileDoubleClick(this, e);
             }
         });
         if (this.selected) {
@@ -336,14 +336,14 @@ class FileInFileBrowser {
         }
         this._htmlElement = element;
         // element = element.querySelector('.fb-file');
-        element.addEventListener('click', () => {
+        element.addEventListener('click', (e) => {
             if (this.onFileClick instanceof Function) {
-                this.onFileClick(this);
+                this.onFileClick(this, e);
             }
         });
-        element.addEventListener('dblclick', () => {
+        element.addEventListener('dblclick', (e) => {
             if (this.onFileDoubleClick instanceof Function) {
-                this.onFileDoubleClick(this);
+                this.onFileDoubleClick(this, e);
             }
         }
         );
@@ -403,14 +403,14 @@ class FileInFileBrowser {
         }
         this._htmlElement = element;
         // element = element.querySelector('.fb-file');
-        element.addEventListener('click', () => {
+        element.addEventListener('click', (e) => {
             if (this.onFileClick instanceof Function) {
-                this.onFileClick(this);
+                this.onFileClick(this, e);
             }
         });
-        element.addEventListener('dblclick', () => {
+        element.addEventListener('dblclick', (e) => {
             if (this.onFileDoubleClick instanceof Function) {
-                this.onFileDoubleClick(this);
+                this.onFileDoubleClick(this, e);
             }
         });
         return this._htmlElement;

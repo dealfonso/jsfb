@@ -210,8 +210,11 @@ The `options` object can have the following properties:
 - `hideZeroSize`: Whether to hide the size from zero size files (only the size will be hidden, the file will still be shown). The default value is `true`.
 - `allowDuplicates`: Whether to allow duplicate files (files with the same name). The default value is `false`. In case that a file with the same name is added, an exception will be thrown.
 - `separateFoldersFromFiles`: Whether to separate the folders from the files. If `true`, the files will always be shown before any other file. The default value is `true`.
+- `enableSelection`: Whether to enable the selection of the files or not. The default value is `true`.
+- `allowMultipleSelection`: If selection is enabled, whether to allow multiple selection or not. The default value is `true`.
 - `onFileClick`: A function to be called when a file is clicked `(file) => {}`.
 - `onFileDoubleClick`: A function to be called when a file is double clicked `(file) => {}`.
+- `onSelectionUpdate`: A function to be called when the selection is updated `(files) => {}`.
 - `onHtmlCreated`: A function to be called when the html element that represents the file is created `(htmlElement, file, mode) => {}`.
 - `overlayGenerator`: Is a function whose aim is to generate a "toolbar" for the file, which will be overlayed to the grid or the preview file element. The prototype is `(file) => {}` and it should return an html element that will be overlayed to the file element.
 - `extensionToIcon`: Is a dictionary with the keys being the extension (without the dot), and the value being a css string to be used as the class of the icon for the file. There is a default value dictionary (`FileBrowser.extensionToIcon`) which is based on the classes of the [Font Awesome](https://fontawesome.com/) library.
@@ -283,6 +286,12 @@ The `FileBrowser` class has the following methods:
     __*__ If the mode is not provided, the current mode of the file browser will be used.
 
 - `clear()`: Clears the files of the file browser.
+
+- `getSelectedFiles()`: Gets the selected files of the file browser.
+
+- `clearSelection()`: Clears the selection of the file browser.
+
+- `getFiles()`: Gets the files of the file browser.
 
 **Note**: The `options` object can have the following properties:
 - `icon`: a class expression to be used as the icon of the file (if ommited, the icon will be determined by the type of the file).

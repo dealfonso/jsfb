@@ -167,8 +167,11 @@
 			hideZeroSize: true,
 			allowDuplicates: false,
 			separateFoldersFromFiles: true,
+			enableSelection: true,
+			allowMultipleSelection: true,
 			onFileClick: file => {},
 			onFileDoubleClick: file => {},
+			onSelectionUpdate: files => {},
 			overlayGenerator: file => null,
 			onHtmlCreated: (element, file, mode) => {},
 			onFileDownload: null,
@@ -208,6 +211,7 @@
 			}
 			return result;
 		}
+		_lastFileSelected = null;
 		constructor(element, options = {}) {
 			if (element instanceof Element) {} else if (typeof element === "string") {
 				element = document.querySelector(element);
@@ -279,6 +283,15 @@
 			}
 			this.render();
 		}
+		getFiles() {
+			return this.filelist;
+		}
+		getSelectedFiles() {
+			return this.filelist.filter(file => file.selected);
+		}
+		clearSelection() {
+			this.filelist.forEach(file => file.unselect());
+		}
 		_setMode(mode) {
 			switch (mode.toLowerCase()) {
 			case "list":
@@ -302,7 +315,49 @@
 				contextMenu: this.options.customContextMenu,
 				icon: options.isDirectory ? "fa-regular fa-folder" : this._filenameToIcon(filename),
 				type: filename.split(".").pop().toLowerCase(),
-				onFileClick: this.options.onFileClick,
+				onFileClick: (file, e) => {
+					if (this.options.enableSelection) {
+						let indexesSelected = this.filelist.filter(file => file.selected).map(file => this.filelist.indexOf(file));
+						if (!this.options.allowMultipleSelection) {
+							this.clearSelection();
+							file.select();
+						} else {
+							if (!e.shiftKey && !e.ctrlKey && !e.metaKey) {
+								this.clearSelection();
+								file.select();
+								this._lastFileSelected = file;
+							}
+							if (e.shiftKey) {
+								if (this._lastFileSelected !== null) {
+									let lastFileIndex = this.filelist.indexOf(this._lastFileSelected);
+									let currentFileIndex = this.filelist.indexOf(file);
+									let start = Math.min(lastFileIndex, currentFileIndex);
+									let end = Math.max(lastFileIndex, currentFileIndex);
+									for (let i = start; i <= end; i++) {
+										this.filelist[i].select();
+									}
+								} else {
+									file.select();
+								}
+								this._lastFileSelected = file;
+							} else {
+								if (e.ctrlKey || e.metaKey) {
+									file.toggleSelect();
+									if (file.selected) {
+										this._lastFileSelected = file;
+									} else {
+										this._lastFileSelected = null;
+									}
+								}
+							}
+						}
+						let indexesSelectedNow = this.filelist.filter(file => file.selected).map(file => this.filelist.indexOf(file));
+						if (indexesSelected.join(",") !== indexesSelectedNow.join(",")) {
+							this.options.onSelectionUpdate(this.getSelectedFiles());
+						}
+					}
+					this.options.onFileClick(file, e);
+				},
 				onFileDoubleClick: this.options.onFileDoubleClick
 			}, options);
 			let file = new FileInFileBrowser(filename, options);
@@ -403,12 +458,12 @@
 				type: "folder"
 			});
 			if (existing === null) {
-				return this.addFile(filename, 0, new Date(), options);
+				return this.addFolder(name, new Date(), options);
 			}
 			if (!existing.isDirectory) {
 				throw new Error("Existing file is not a folder");
 			}
-			return this.updateFolder(filename, options);
+			return this.updateFolder(name, options);
 		}
 		findFile(filename) {
 			let existing = this.filelist.find(file => file.filename === filename);
@@ -440,7 +495,6 @@
 		}
 		forEachFile(callback) {
 			this.filelist.forEach(callback);
-			this.render();
 		}
 		render(mode = null) {
 			if (mode !== null) {
@@ -490,6 +544,7 @@
 					break;
 				}
 			}
+			this._lastFileSelected = null;
 		}
 		sort(column, ascending) {
 			let sortFunction = this._getSortFunction(column, ascending);
@@ -573,7 +628,7 @@
 		_evaluateOptions() {
 			this._setMode(this.options.mode);
 			this.options.onHtmlCreated = this.options.onHtmlCreated?.bind(this);
-			let callbacks = ["onFileClick", "onFileDoubleClick", "onFileDownload", "onFileDelete", "onFileRename", "onFileCopy", "onFileMove", "onFileShare", "onFileInfo"];
+			let callbacks = ["onFileClick", "onFileDoubleClick", "onSelectionUpdate", "onFileDownload", "onFileDelete", "onFileRename", "onFileCopy", "onFileMove", "onFileShare", "onFileInfo"];
 			callbacks.forEach(callback => {
 				this.options[callback] = covertCallback(this.options[callback], this);
 			});
@@ -743,7 +798,7 @@
 			});
 		}
 	}
-	FileBrowser.version = "1.0.4";
+	FileBrowser.version = "1.0.5";
 	document.addEventListener("DOMContentLoaded", () => {
 		FileBrowser.mutationObserver.observe(document.body, {
 			childList: true,
@@ -933,14 +988,14 @@
 			if (this.selected) {
 				row.classList.add("selected");
 			}
-			row.addEventListener("click", () => {
+			row.addEventListener("click", e => {
 				if (this.onFileClick instanceof Function) {
-					this.onFileClick(this);
+					this.onFileClick(this, e);
 				}
 			});
-			row.addEventListener("dblclick", () => {
+			row.addEventListener("dblclick", e => {
 				if (this.onFileDoubleClick instanceof Function) {
-					this.onFileDoubleClick(this);
+					this.onFileDoubleClick(this, e);
 				}
 			});
 			if (this.selected) {
@@ -1004,14 +1059,14 @@
 				element.classList.add("selected");
 			}
 			this._htmlElement = element;
-			element.addEventListener("click", () => {
+			element.addEventListener("click", e => {
 				if (this.onFileClick instanceof Function) {
-					this.onFileClick(this);
+					this.onFileClick(this, e);
 				}
 			});
-			element.addEventListener("dblclick", () => {
+			element.addEventListener("dblclick", e => {
 				if (this.onFileDoubleClick instanceof Function) {
-					this.onFileDoubleClick(this);
+					this.onFileDoubleClick(this, e);
 				}
 			});
 			return this._htmlElement;
@@ -1061,14 +1116,14 @@
 				element.classList.add("selected");
 			}
 			this._htmlElement = element;
-			element.addEventListener("click", () => {
+			element.addEventListener("click", e => {
 				if (this.onFileClick instanceof Function) {
-					this.onFileClick(this);
+					this.onFileClick(this, e);
 				}
 			});
-			element.addEventListener("dblclick", () => {
+			element.addEventListener("dblclick", e => {
 				if (this.onFileDoubleClick instanceof Function) {
-					this.onFileDoubleClick(this);
+					this.onFileDoubleClick(this, e);
 				}
 			});
 			return this._htmlElement;

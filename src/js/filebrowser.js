@@ -57,10 +57,17 @@ class FileBrowser {
         allowDuplicates: false,
         // Whether to separate the folders from the files
         separateFoldersFromFiles: true,
+        // Whether to enable selection of files or not (if enabled, the filebrowser will manage the selection; otherwise, the user will 
+        // have to manage it)
+        enableSelection: true,
+        // If selection is enabled, whether to allow multiple selection or not
+        allowMultipleSelection: true,
         // Called when a file is clicked (file) => { }
         onFileClick: (file) => { },
         // Called when a file is double clicked (file) => {
         onFileDoubleClick:  (file) => { },
+        // Called when the selection is updated (files) => { }, where <files> is an array with the files selected
+        onSelectionUpdate: (files) => { },
         // Called to generate a "toolbar" for the file (the original purpose is to generate a context menu for the file)
         overlayGenerator: (file) => null,
         // Called when a file is created (element, file, mode) => { }, where <element> is the HTML element created, <file>
@@ -133,6 +140,9 @@ class FileBrowser {
         }
         return result;
     }    
+
+    // The last file selected
+    _lastFileSelected = null;
 
     /**
      * Creates a FileBrowser in the given element with the given options
@@ -248,6 +258,29 @@ class FileBrowser {
     }
 
     /**
+     * Returns the files in the FileBrowser
+     * @returns an array with the files in the FileBrowser
+     */
+    getFiles() {
+        return this.filelist;
+    }
+
+    /**
+     * Returns the files selected in the FileBrowser
+     * @returns an array with the files selected
+     */
+    getSelectedFiles() {
+        return this.filelist.filter((file) => file.selected);
+    }
+
+    /**
+     * Clears the selection of the files in the FileBrowser
+     */
+    clearSelection() {
+        this.filelist.forEach((file) => file.unselect());
+    }
+    
+    /**
      * Sets the mode of the FileBrowser
      * @param {string} mode - the mode to be set ("list", "grid" or "preview")
      * @throws {Error} if the mode is invalid
@@ -278,7 +311,57 @@ class FileBrowser {
             contextMenu: this.options.customContextMenu,
             icon: options.isDirectory?"fa-regular fa-folder": this._filenameToIcon(filename),
             type: filename.split('.').pop().toLowerCase(),
-            onFileClick: this.options.onFileClick,
+            onFileClick: (file, e) => {
+                if (this.options.enableSelection) {
+                    let indexesSelected = this.filelist.filter((file) => file.selected).map((file) => this.filelist.indexOf(file));
+
+                    if (!this.options.allowMultipleSelection) {
+                        // Simply select the file
+                        this.clearSelection();
+                        file.select();
+                    } else {
+                        if (!e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                            this.clearSelection();
+                            file.select();
+                            this._lastFileSelected = file;
+                        }
+
+                        if (e.shiftKey) {
+                            // If shift key is pressed, select all files between the last selected and the current one
+                            if (this._lastFileSelected !== null) {
+                                let lastFileIndex = this.filelist.indexOf(this._lastFileSelected);
+                                let currentFileIndex = this.filelist.indexOf(file);
+                                let start = Math.min(lastFileIndex, currentFileIndex);
+                                let end = Math.max(lastFileIndex, currentFileIndex);
+                                for (let i = start; i <= end; i++) {
+                                    this.filelist[i].select();
+                                }
+                            } else {
+                                // But if there is no last file selected, we'll just select the current one
+                                file.select();
+                            }
+                            this._lastFileSelected = file;
+                        } else {
+                            if (e.ctrlKey || e.metaKey) {
+                                // If control key is pressed, toggle the selection of the current file
+                                file.toggleSelect();
+                                if (file.selected) {
+                                    this._lastFileSelected = file;
+                                } else {
+                                    this._lastFileSelected = null;
+                                }
+                            }
+                        }
+                    }
+
+                    // We'll check if the selection has changed and if so, we'll call the onSelectionUpdate callback
+                    let indexesSelectedNow = this.filelist.filter((file) => file.selected).map((file) => this.filelist.indexOf(file));
+                    if (indexesSelected.join(',') !== indexesSelectedNow.join(',')) {
+                        this.options.onSelectionUpdate(this.getSelectedFiles());
+                    }
+                }
+                this.options.onFileClick(file, e);
+            },
             onFileDoubleClick: this.options.onFileDoubleClick,
         }, options);
 
@@ -446,12 +529,12 @@ class FileBrowser {
             type: 'folder',
         });
         if (existing === null) {
-            return this.addFile(filename, 0, new Date(), options);
+            return this.addFolder(name, new Date(), options);
         }
         if (!existing.isDirectory) {
             throw new Error('Existing file is not a folder');
         }
-        return this.updateFolder(filename, options);
+        return this.updateFolder(name, options);
     }
 
     /**
@@ -508,7 +591,7 @@ class FileBrowser {
      */
     forEachFile(callback) {
         this.filelist.forEach(callback);
-        this.render();
+        // this.render();
     }
 
     /**
@@ -566,6 +649,9 @@ class FileBrowser {
                     break;
             }
         }
+
+        // Clear the last file selected
+        this._lastFileSelected = null;
     }
 
     /**
@@ -683,7 +769,7 @@ class FileBrowser {
 
         this.options.onHtmlCreated = this.options.onHtmlCreated?.bind(this);
 
-        let callbacks = ['onFileClick', 'onFileDoubleClick', 'onFileDownload', 'onFileDelete', 'onFileRename', 'onFileCopy', 'onFileMove', 'onFileShare', 'onFileInfo'];
+        let callbacks = ['onFileClick', 'onFileDoubleClick', 'onSelectionUpdate' , 'onFileDownload', 'onFileDelete', 'onFileRename', 'onFileCopy', 'onFileMove', 'onFileShare', 'onFileInfo'];
         callbacks.forEach((callback) => {
             this.options[callback] = covertCallback(this.options[callback], this);
         });
@@ -890,7 +976,7 @@ class FileBrowser {
     }
 }
 
-FileBrowser.version = '1.0.4';
+FileBrowser.version = '1.0.5';
 
 document.addEventListener('DOMContentLoaded', () => {
     FileBrowser.mutationObserver.observe(document.body, {
