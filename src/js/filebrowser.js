@@ -86,19 +86,19 @@ class FileBrowser {
             'html': 'bi bi-filetype-html',
             'md': 'bi bi-filetype-md',
         },
-        fileIconFontAwesome: 'far fa-file',
-        folderIconFontAwesome: 'far fa-folder',
-        fileIconBootstrapIcons: 'bi bi-file-earmark',
-        folderIconBootstrapIcons: 'bi bi-folder',
+        defaultFileIconFontAwesome: 'far fa-file',
+        defaultFolderIconFontAwesome: 'far fa-folder',
+        defaultFileIconBootstrapIcons: 'bi bi-file-earmark',
+        defaultFolderIconBootstrapIcons: 'bi bi-folder',
         useBootstrapIcons: function() {
             FileBrowser.defaultOptions.extensionToIcon = FileBrowser.iconUtils.extensionToIconBootstrapIcons;
-            FileBrowser.defaultOptions.fileIcon = FileBrowser.iconUtils.fileIconBootstrapIcons;
-            FileBrowser.defaultOptions.folderIcon = FileBrowser.iconUtils.folderIconBootstrapIcons;
+            FileBrowser.defaultOptions.defaultFileIcon = FileBrowser.iconUtils.defaultFileIconBootstrapIcons;
+            FileBrowser.defaultOptions.defaultFolderIcon = FileBrowser.iconUtils.defaultFolderIconBootstrapIcons;
         },
         useFontAwesomeIcons: function() {
             FileBrowser.defaultOptions.extensionToIcon = FileBrowser.iconUtils.extensionToIconFontAwesome;
-            FileBrowser.defaultOptions.fileIcon = FileBrowser.iconUtils.fileIconFontAwesome;
-            FileBrowser.defaultOptions.folderIcon = FileBrowser.iconUtils.folderIconFontAwesome;
+            FileBrowser.defaultOptions.defaultFileIcon = FileBrowser.iconUtils.defaultFileIconFontAwesome;
+            FileBrowser.defaultOptions.defaultFolderIcon = FileBrowser.iconUtils.defaultFolderIconFontAwesome;
         }
     
     }
@@ -151,9 +151,9 @@ class FileBrowser {
         //   If the extension is not found, the default icon will be used (the "" extension).
         extensionToIcon: FileBrowser.iconUtils.extensionToIconFontAwesome,
         // The icon to be used for files (if the extension is not found in the extensionToIcon dictionary)
-        fileIcon: FileBrowser.iconUtils.fileIconFontAwesome,
+        defaultFileIcon: FileBrowser.iconUtils.defaultFileIconFontAwesome,
         // The icon to be used for folders
-        folderIcon: FileBrowser.iconUtils.folderIconFontAwesome,
+        defaultFolderIcon: FileBrowser.iconUtils.defaultFolderIconFontAwesome,
         // The context menu options is an object with the options to be shown in the context menu. This is an object
         //  where the key is the action to be performed and the value is either an object with the options for the item
         //  or a function to be called when the item is clicked.
@@ -372,7 +372,7 @@ class FileBrowser {
         filename = `${filename}`;
         options = Object.assign({}, {
             contextMenu: this.options.customContextMenu,
-            icon: options.isDirectory?this.options.folderIcon: this._filenameToIcon(filename),
+            icon: options.isDirectory?this.options.defaultFolderIcon: this._filenameToIcon(filename),
             type: filename.split('.').pop().toLowerCase(),
             onFileClick: (file, e) => {
                 if (this.options.enableSelection) {
@@ -527,7 +527,7 @@ class FileBrowser {
     addFolder(name, modified, options = {}) {
         return this._addFile(name, Object.assign({}, {
                 // Allow to override the icon using the options
-                icon: this.options.folderIcon,
+                icon: this.options.defaultFolderIcon,
                 // Also allow to override the size (which will be null for folders unless specified)
                 size: null,
             }, options, {
@@ -996,7 +996,7 @@ class FileBrowser {
         if (extension in this.options.extensionToIcon) {
             return this.options.extensionToIcon[extension];
         }
-        return this.options.extensionToIcon[''] || this.options.fileIcon;
+        return this.options.extensionToIcon[''] || this.options.defaultFileIcon;
     }
 
     _createGrid() {
