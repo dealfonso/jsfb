@@ -119,46 +119,103 @@
 		exports = window;
 	}
 	class FileBrowser {
-		static extensionToIcon = {
-			txt: "fas fa-file-alt",
-			pdf: "fas fa-file-pdf",
-			doc: "fas fa-file-word",
-			docx: "fas fa-file-word",
-			xls: "fas fa-file-excel",
-			xlsx: "fas fa-file-excel",
-			ppt: "fas fa-file-powerpoint",
-			pptx: "fas fa-file-powerpoint",
-			jpg: "fas fa-file-image",
-			jpeg: "fas fa-file-image",
-			png: "fas fa-file-image",
-			gif: "fas fa-file-image",
-			mp3: "fas fa-file-audio",
-			wav: "fas fa-file-audio",
-			mov: "fas fa-file-video",
-			mp4: "fas fa-file-video",
-			avi: "fas fa-file-video",
-			zip: "fas fa-file-archive",
-			rar: "fas fa-file-archive",
-			tar: "fas fa-file-archive",
-			gz: "fas fa-file-archive",
-			"7z": "fas fa-file-archive",
-			exe: "fas fa-file-executable",
-			js: "fas fa-file-code",
-			css: "fas fa-file-code",
-			html: "fas fa-file-code",
-			php: "fas fa-file-code",
-			py: "fas fa-file-code",
-			java: "fas fa-file-code",
-			c: "fas fa-file-code",
-			cpp: "fas fa-file-code",
-			h: "fas fa-file-code",
-			hpp: "fas fa-file-code",
-			json: "fas fa-file-code",
-			xml: "fas fa-file-code",
-			csv: "fas fa-file-excel",
-			file: "fas fa-file",
-			html: "fas fa-file-code",
-			md: "fas fa-file-alt"
+		static iconUtils = {
+			extensionToIconFontAwesome: {
+				txt: "fas fa-file-alt",
+				pdf: "fas fa-file-pdf",
+				doc: "fas fa-file-word",
+				docx: "fas fa-file-word",
+				xls: "fas fa-file-excel",
+				xlsx: "fas fa-file-excel",
+				ppt: "fas fa-file-powerpoint",
+				pptx: "fas fa-file-powerpoint",
+				jpg: "fas fa-file-image",
+				jpeg: "fas fa-file-image",
+				png: "fas fa-file-image",
+				gif: "fas fa-file-image",
+				mp3: "fas fa-file-audio",
+				wav: "fas fa-file-audio",
+				mov: "fas fa-file-video",
+				mp4: "fas fa-file-video",
+				avi: "fas fa-file-video",
+				zip: "fas fa-file-archive",
+				rar: "fas fa-file-archive",
+				tar: "fas fa-file-archive",
+				gz: "fas fa-file-archive",
+				"7z": "fas fa-file-archive",
+				exe: "fas fa-file-executable",
+				js: "fas fa-file-code",
+				css: "fas fa-file-code",
+				html: "fas fa-file-code",
+				php: "fas fa-file-code",
+				py: "fas fa-file-code",
+				java: "fas fa-file-code",
+				c: "fas fa-file-code",
+				cpp: "fas fa-file-code",
+				h: "fas fa-file-code",
+				hpp: "fas fa-file-code",
+				json: "fas fa-file-code",
+				xml: "fas fa-file-code",
+				csv: "fas fa-file-excel",
+				file: "fas fa-file",
+				html: "fas fa-file-code",
+				md: "fas fa-file-alt"
+			},
+			extensionToIconBootstrapIcons: {
+				txt: "bi bi-filetype-txt",
+				pdf: "bi bi-filetype-pdf",
+				doc: "bi bi-filetype-doc",
+				docx: "bi bi-filetype-docx",
+				xls: "bi bi-filetype-xls",
+				xlsx: "bi bi-filetype-xlsx",
+				ppt: "bi bi-filetype-ppt",
+				pptx: "bi bi-filetype-pptx",
+				jpg: "bi bi-filetype-jpg",
+				jpeg: "bi bi-filetype-jpg",
+				png: "bi bi-filetype-png",
+				gif: "bi bi-filetype-gif",
+				mp3: "bi bi-filetype-mp3",
+				wav: "bi bi-filetype-wav",
+				mov: "bi bi-filetype-mov",
+				mp4: "bi bi-filetype-mp4",
+				avi: "bi bi-filetype-avi",
+				zip: "bi bi-file-zip",
+				rar: "bi bi-file-zip",
+				tar: "bi bi-file-zip",
+				gz: "bi bi-file-zip",
+				"7z": "bi bi-file-zip",
+				exe: "bi bi-filetype-exe",
+				js: "bi bi-filetype-js",
+				css: "bi bi-filetype-css",
+				html: "bi bi-filetype-html",
+				php: "bi bi-filetype-php",
+				py: "bi bi-filetype-py",
+				java: "bi bi-filetype-java",
+				c: "bi bi-filetype-c",
+				cpp: "bi bi-filetype-cpp",
+				h: "bi bi-filetype-h",
+				hpp: "bi bi-filetype-hpp",
+				json: "bi bi-filetype-json",
+				xml: "bi bi-filetype-xml",
+				csv: "bi bi-filetype-csv",
+				file: "bi bi-filetype-file",
+				html: "bi bi-filetype-html",
+				md: "bi bi-filetype-md"
+			},
+			defaultFileIconFontAwesome: "far fa-file",
+			defaultFolderIconFontAwesome: "far fa-folder",
+			defaultFileIconBootstrapIcons: "bi bi-file-earmark",
+			defaultFolderIconBootstrapIcons: "bi bi-folder",
+			useBootstrapIcons: function () {
+				FileBrowser.defaultOptions.extensionToIcon = FileBrowser.iconUtils.extensionToIconBootstrapIcons;
+				FileBrowser.defaultOptions.defaultFileIcon = FileBrowser.iconUtils.defaultFileIconBootstrapIcons;
+				FileBrowser.defaultOptions.defaultFolderIcon = FileBrowser.iconUtils.defaultFolderIconBootstrapIcons;
+			},
+			useFontAwesomeIcons: function () {
+				FileBrowser.defaultOptions.extensionToIcon = FileBrowser.iconUtils.extensionToIconFontAwesome;
+				FileBrowser.defaultOptions.defaultFileIcon = FileBrowser.iconUtils.defaultFileIconFontAwesome;
+				FileBrowser.defaultOptions.defaultFolderIcon = FileBrowser.iconUtils.defaultFolderIconFontAwesome;
+			}
 		};
 		static defaultOptions = {
 			mode: "list",
@@ -181,7 +238,9 @@
 			onFileMove: null,
 			onFileShare: null,
 			onFileInfo: null,
-			extensionToIcon: FileBrowser.extensionToIcon,
+			extensionToIcon: FileBrowser.iconUtils.extensionToIconFontAwesome,
+			defaultFileIcon: FileBrowser.iconUtils.defaultFileIconFontAwesome,
+			defaultFolderIcon: FileBrowser.iconUtils.defaultFolderIconFontAwesome,
 			customContextMenu: null
 		};
 		static mutationObserver = new MutationObserver(mutations => {
@@ -313,7 +372,7 @@
 			filename = `${filename}`;
 			options = Object.assign({}, {
 				contextMenu: this.options.customContextMenu,
-				icon: options.isDirectory ? "fa-regular fa-folder" : this._filenameToIcon(filename),
+				icon: options.isDirectory ? this.options.defaultFolderIcon : this._filenameToIcon(filename),
 				type: filename.split(".").pop().toLowerCase(),
 				onFileClick: (file, e) => {
 					if (this.options.enableSelection) {
@@ -415,7 +474,7 @@
 		}
 		addFolder(name, modified, options = {}) {
 			return this._addFile(name, Object.assign({}, {
-				icon: "fa-regular fa-folder",
+				icon: this.options.defaultFolderIcon,
 				size: null
 			}, options, {
 				isDirectory: true,
@@ -760,7 +819,7 @@
 			if (extension in this.options.extensionToIcon) {
 				return this.options.extensionToIcon[extension];
 			}
-			return this.options.extensionToIcon[""] || "far fa-file";
+			return this.options.extensionToIcon[""] || this.options.defaultFileIcon;
 		}
 		_createGrid() {
 			let grid = document.createElement("div");

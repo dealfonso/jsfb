@@ -746,30 +746,57 @@
   --fb-file-padding: 0.5em;
   --fb-padding: 0.5em
 }
+.fb-file-icon .bi-filetype-pdf,
 .fb-file-icon .fa-file-pdf {
   color: red
 }
+.fb-file-icon .bi-filetype-doc,
+.fb-file-icon .bi-filetype-docx,
 .fb-file-icon .fa-file-word {
   color: #00f
 }
+.fb-file-icon .bi-filetype-xls,
+.fb-file-icon .bi-filetype-xlsx,
 .fb-file-icon .fa-file-excel {
   color: green
 }
+.fb-file-icon .bi-filetype-ppt,
+.fb-file-icon .bi-filetype-pptx,
 .fb-file-icon .fa-file-powerpoint {
   color: orange
 }
+.fb-file-icon .bi-filetype-gif,
+.fb-file-icon .bi-filetype-jpeg,
+.fb-file-icon .bi-filetype-jpg,
+.fb-file-icon .bi-filetype-png,
 .fb-file-icon .fa-file-image {
   color: purple
 }
+.fb-file-icon .bi-file-zip,
 .fb-file-icon .fa-file-archive {
   color: brown
 }
+.fb-file-icon .bi-filetype-mp3,
+.fb-file-icon .bi-filetype-wav,
 .fb-file-icon .fa-file-audio {
   color: #b8860b
 }
+.fb-file-icon .bi-filetype-avi,
+.fb-file-icon .bi-filetype-mov,
+.fb-file-icon .bi-filetype-mp4,
 .fb-file-icon .fa-file-video {
   color: #00008b
 }
+.fb-file-icon .bi-filetype-c,
+.fb-file-icon .bi-filetype-cpp,
+.fb-file-icon .bi-filetype-css,
+.fb-file-icon .bi-filetype-csv,
+.fb-file-icon .bi-filetype-h,
+.fb-file-icon .bi-filetype-html,
+.fb-file-icon .bi-filetype-js,
+.fb-file-icon .bi-filetype-json,
+.fb-file-icon .bi-filetype-php,
+.fb-file-icon .bi-filetype-xml,
 .fb-file-icon .fa-file-code {
   color: #00f
 }
@@ -787,22 +814,6 @@
 }
 .fb-hidden {
   display: none
-}
-.fa-duotone,
-.fa-light,
-.fa-regular,
-.fa-solid,
-.fa-thin,
-.fab,
-.fad,
-.fal,
-.far,
-.fas {
-  background: var(--svg-icon) 0 0 no-repeat;
-  width: 1em;
-  height: 1em;
-  display: inline-block;
-  background-position: center
 }
 .fa-ellipsis-v {
   --svg-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 360a56 56 0 1 0 0 112 56 56 0 1 0 0-112zm0-160a56 56 0 1 0 0 112 56 56 0 1 0 0-112zM120 96A56 56 0 1 0 8 96a56 56 0 1 0 112 0z"/></svg>')
