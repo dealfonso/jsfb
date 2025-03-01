@@ -22,31 +22,33 @@
 }
 
 /** colores para los iconos */
-.fb-file-icon .fa-file-pdf {
+.fb-file-icon .fa-file-pdf, .fb-file-icon .bi-filetype-pdf {
     color: red;
 }
-.fb-file-icon .fa-file-word {
+.fb-file-icon .fa-file-word, .fb-file-icon .bi-filetype-doc, .fb-file-icon .bi-filetype-docx {
     color: blue;
 }
-.fb-file-icon .fa-file-excel {
+.fb-file-icon .fa-file-excel, .fb-file-icon .bi-filetype-xls, .fb-file-icon .bi-filetype-xlsx {
     color: green;
 }
-.fb-file-icon .fa-file-powerpoint {
+.fb-file-icon .fa-file-powerpoint, .fb-file-icon .bi-filetype-ppt, .fb-file-icon .bi-filetype-pptx {
     color: orange;
 }
-.fb-file-icon .fa-file-image {
+.fb-file-icon .fa-file-image, .fb-file-icon .bi-filetype-png, .fb-file-icon .bi-filetype-jpg, .fb-file-icon .bi-filetype-gif, .fb-file-icon .bi-filetype-jpeg {
     color: purple;
 }
-.fb-file-icon .fa-file-archive {
+.fb-file-icon .fa-file-archive, .fb-file-icon .bi-file-zip {
     color: brown;
 }
-.fb-file-icon .fa-file-audio {
+.fb-file-icon .fa-file-audio, .fb-file-icon .bi-filetype-wav, .fb-file-icon .bi-filetype-mp3 {
     color: darkgoldenrod;
 }
-.fb-file-icon .fa-file-video {
+.fb-file-icon .fa-file-video, .fb-file-icon .bi-filetype-mov, .fb-file-icon .bi-filetype-mp4, .fb-file-icon .bi-filetype-avi {
     color: darkblue;
 }
-.fb-file-icon .fa-file-code {
+.fb-file-icon .fa-file-code, .fb-file-icon .bi-filetype-html, .fb-file-icon .bi-filetype-cpp, .fb-file-icon .bi-filetype-h, .fb-file-icon .bi-filetype-c,
+.fb-file-icon .bi-filetype-js, .fb-file-icon .bi-filetype-css, .fb-file-icon .bi-filetype-php, .fb-file-icon .bi-filetype-json, .fb-file-icon .bi-filetype-xml,
+.fb-file-icon .bi-filetype-csv {
     color: blue;
 }
 .fb-file-icon .fa-file-alt {
